@@ -5,14 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>GoLang HTTP Fileserver</title>
+    <script>
+
+        // function submit() {
+        //     let clientMsg = document.getElementById("text-input").value;
+        //     console.log("SUBMIT");
+        // }
+
+        // Removed form action"/receive"
+        // <label for="file">Filename:</label>
+
+    </script>
 </head>
 <body>
     <h2>Upload a file</h2>
-    <form action="/receive" method="post" enctype="multipart/form-data">
-      <label for="file">Filename:</label>
-      <input type="file" name="file" id="file">
-      <br>
-      <input type="submit" name="submit" value="Submit">
+    <form method="post" enctype="multipart/form-data">
+        <input type="text" name="type" id="type">
+        <input type="file" name="uploadFile" id="uploadFile">
+        <br>
+        <input type="submit" name="submit" value="Submit">
     </form>
     </body>
 </html>
