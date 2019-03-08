@@ -1,5 +1,7 @@
 package main
 
+/***  STARTER CODE FROM: https://zupzup.org/go-http-file-upload-download/  ***/
+
 import (
 	"crypto/rand"
 	"fmt"
@@ -12,14 +14,14 @@ import (
 )
 
 const maxUploadSize = 2 * 1024 * 1024 // 2 mb
-const uploadPath = "./photos"
+const uploadPath = "./photos"         // Directory that photos will be saving into
 
-const FileTooBig = "FILE TOO BIG"
-const InvalidFile = "INVALID FILE"
-const InvalidFileType = "INVALID FILE TYPE"
-const CantWriteFile = "CAN'T WRITE FILE"
-const CantReadFileType = "CAN'T READ FILE TYPE"
-const Success = "SUCCESS"
+const fileTooBig = "FILE TOO BIG"
+const invalidFile = "INVALID FILE"
+const invalidFileType = "INVALID FILE TYPE"
+const cantWriteFile = "CAN'T WRITE FILE"
+const cantReadFileType = "CAN'T READ FILE TYPE"
+const success = "SUCCESS"
 
 func main() {
 	http.HandleFunc("/upload", UploadFileHandler)
@@ -31,39 +33,41 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-// func uploadFileHandler() http.HandlerFunc {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// UploadFileHandler handles uploading files to the server
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	// validate file size
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
 	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
-		renderError(w, FileTooBig, http.StatusBadRequest)
+		renderError(w, fileTooBig, http.StatusBadRequest)
 		return
 	}
 
-	// parse and validate file and post parameters
-	// "To access multiple values of the same key, call ParseForm and then inspect Request.Form directly."
+	// Useful tip (for uploading multiple photos): "To access multiple values of the same key, call ParseForm and then inspect Request.Form directly."
+
+	// In Postman, set key to "type" and value to MIME file type of attachment (https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#Image_types)
 	fileType := r.PostFormValue("type")
 	fmt.Printf("fileType: %v\n", fileType)
+
+	// In Postman, get file from "uploadFile" form field
 	file, _, err := r.FormFile("uploadFile")
 	if err != nil {
-		renderError(w, InvalidFile, http.StatusBadRequest)
+		renderError(w, invalidFile, http.StatusBadRequest)
 		return
 	}
-	fmt.Print("Past r.FormFile\n")
+	fmt.Print("Past r.FormFile! \n")
 	defer file.Close()
 	fileBytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		renderError(w, InvalidFile, http.StatusBadRequest)
+		renderError(w, invalidFile, http.StatusBadRequest)
 		return
 	}
-	fmt.Print("Past ReadAll\n")
+	fmt.Print("Past ReadAll! \n")
 
 	// check file type, detectcontenttype only needs the first 512 bytes
 	filetype := http.DetectContentType(fileBytes)
 	if filetype != "image/jpeg" && filetype != "image/jpg" &&
 		filetype != "image/gif" && filetype != "image/png" {
-		renderError(w, InvalidFileType, http.StatusBadRequest)
+		renderError(w, invalidFileType, http.StatusBadRequest)
 		return
 	}
 
@@ -73,33 +77,34 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	// case "application/pdf":
 	// 	break
 	// default:
-	// 	renderError(w, InvalidFileType, http.StatusBadRequest)
+	// 	renderError(w, invalidFileType, http.StatusBadRequest)
 	// 	return
 	// }
 
 	fileName := randToken(12)
+	// ExtensionsByType are all possible extentions for file type
 	fileEndings, err := mime.ExtensionsByType(fileType)
 	if err != nil {
-		renderError(w, CantReadFileType, http.StatusInternalServerError)
+		renderError(w, cantReadFileType, http.StatusInternalServerError)
 		return
 	}
 	newPath := filepath.Join(uploadPath, fileName+fileEndings[0])
 	fmt.Printf("FileType: %s, File: %s\n", fileType, newPath)
 
-	// write file
+	// write file to newPath
 	newFile, err := os.Create(newPath)
 	if err != nil {
-		renderError(w, CantWriteFile, http.StatusInternalServerError)
+		renderError(w, cantWriteFile, http.StatusInternalServerError)
 		fmt.Printf("ERROR in os.Create: %v\n", err)
 		return
 	}
 	defer newFile.Close() // idempotent, okay to call twice
 	if _, err := newFile.Write(fileBytes); err != nil || newFile.Close() != nil {
-		renderError(w, CantWriteFile, http.StatusInternalServerError)
+		renderError(w, cantWriteFile, http.StatusInternalServerError)
 		fmt.Printf("ERROR in newFile.Write: %v\n", err)
 		return
 	}
-	w.Write([]byte(Success))
+	w.Write([]byte(success))
 }
 
 func renderError(w http.ResponseWriter, message string, statusCode int) {
