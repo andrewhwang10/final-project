@@ -4,23 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>GoLang HTTP Fileserver</title>
-    <script>
-
-        // function submit() {
-        //     let clientMsg = document.getElementById("text-input").value;
-        //     console.log("SUBMIT");
-        // }
-
-    </script>
+    <title>Tag</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+    crossorigin="anonymous">
 </head>
 <body>
-    <h2>Upload a file</h2>
-    <form method="post" enctype="multipart/form-data">
-        <input type="text" name="type" id="type">
-        <input type="file" name="uploadFile" id="uploadFile">
-        <br>
-        <input type="submit" name="submit" value="Submit">
-    </form>
-    </body>
+    <header class="jumbotron">
+        <div>
+            <h1>Tag</h1>
+            <p>Upload a photo!</p>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <form action="http://localhost:8080/upload" id="form" method="POST" enctype="multipart/form-data">
+                <input type="text" name="type" value="image/png" id="type">
+                <input type="file" name="uploadFile" id="uploadFile">
+                <!-- <button class="btn btn-success" id="submit-form" type="submit" value="Submit" form="form">Submit</button> -->
+                <input type="submit" name="submit" value="Submit">
+            </form>
+        </div>
+        <div class="container" id="photosUploaded"></div>
+    </main>
+
+    <!-- <script>
+        function OnSubmit(e) {
+            // e.preventDefault() // Causing error
+            // let reqUrl = "http://localhost:8080/upload"
+            console.log("In OnSubmit!!!")
+            console.log(e)
+            return false
+        }   
+    </script> -->
+    <!-- <script src="/index.js"></script> -->
+
+</body>
 </html>

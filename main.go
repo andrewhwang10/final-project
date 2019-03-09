@@ -16,6 +16,7 @@ import (
 const maxUploadSize = 2 * 1024 * 1024 // 2 mb
 const uploadPath = "./photos"         // Directory that photos will be saving into
 
+const parseFormFail = "PARSE FORM FAILED"
 const fileTooBig = "FILE TOO BIG"
 const invalidFile = "INVALID FILE"
 const invalidFileType = "INVALID FILE TYPE"
@@ -35,6 +36,7 @@ func main() {
 
 // UploadFileHandler handles uploading files to the server
 func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("INSIDE UPLOAD FILE HANDLER")
 	// validate file size
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
 	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
@@ -42,10 +44,23 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Printf("r.Body: %v\n", r.Body)
+	fmt.Printf("r.Method: %v\n", r.Method)
+
+	// Already called witin FormValue; probably not necessary but used r.Form for debugging
+	errParseForm := r.ParseForm()
+	if errParseForm != nil {
+		renderError(w, parseFormFail, http.StatusBadRequest)
+		return
+	}
+
+	fmt.Printf("r.Form: %v\n", r.Form)
+
 	// Useful tip (for uploading multiple photos): "To access multiple values of the same key, call ParseForm and then inspect Request.Form directly."
 
 	// In Postman, set key to "type" and value to MIME file type of attachment (https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#Image_types)
-	fileType := r.PostFormValue("type")
+	// Previously: PostFormValue
+	fileType := r.FormValue("type")
 	fmt.Printf("fileType: %v\n", fileType)
 
 	// In Postman, get file from "uploadFile" form field
@@ -84,6 +99,8 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	fileName := randToken(12)
 	// ExtensionsByType are all possible extentions for file type
 	fileEndings, err := mime.ExtensionsByType(fileType)
+	fmt.Printf("fileEndings: %v\n", fileEndings)
+	fmt.Printf("fileType: %v\n", fileType)
 	if err != nil {
 		renderError(w, cantReadFileType, http.StatusInternalServerError)
 		return
