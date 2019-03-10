@@ -4,6 +4,7 @@ package main
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -32,6 +33,15 @@ func main() {
 
 	log.Print("Server started on localhost:8080, use /upload for uploading files and /files/{fileName} for downloading")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+type PhotoUploaded struct {
+	Path string
+	File *os.File
+}
+
+func NewPhotoUploaded() *PhotoUploaded {
+	return &PhotoUploaded{}
 }
 
 // UploadFileHandler handles uploading files to the server
@@ -86,16 +96,6 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// switch filetype {
-	// case "image/jpeg", "image/jpg":
-	// case "image/gif", "image/png":
-	// case "application/pdf":
-	// 	break
-	// default:
-	// 	renderError(w, invalidFileType, http.StatusBadRequest)
-	// 	return
-	// }
-
 	fileName := randToken(12)
 	// ExtensionsByType are all possible extentions for file type
 	fileEndings, err := mime.ExtensionsByType(fileType)
@@ -121,7 +121,18 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("ERROR in newFile.Write: %v\n", err)
 		return
 	}
-	w.Write([]byte(success))
+
+	fmt.Println(success)
+	photoUploaded := NewPhotoUploaded()
+	photoUploaded.File = newFile // File param in response is empty?
+	photoUploaded.Path = newPath
+
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(photoUploaded); err != nil {
+		http.Error(w, "Error encoding photoUploaded struct into JSON: %v\n", http.StatusInternalServerError)
+		return
+	}
 }
 
 func renderError(w http.ResponseWriter, message string, statusCode int) {

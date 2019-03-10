@@ -17,7 +17,7 @@
     </header>
     <main>
         <div class="container">
-            <form action="http://localhost:8080/upload" id="form" method="POST" enctype="multipart/form-data">
+            <form id="form" enctype="multipart/form-data">
                 <input type="text" name="type" value="image/png" id="type">
                 <input type="file" name="uploadFile" id="uploadFile">
                 <!-- <button class="btn btn-success" id="submit-form" type="submit" value="Submit" form="form">Submit</button> -->
@@ -26,17 +26,6 @@
         </div>
         <div class="container" id="photosUploaded"></div>
     </main>
-
-    <!-- <script>
-        function OnSubmit(e) {
-            // e.preventDefault() // Causing error
-            // let reqUrl = "http://localhost:8080/upload"
-            console.log("In OnSubmit!!!")
-            console.log(e)
-            return false
-        }   
-    </script> -->
-    <!-- <script src="/index.js"></script> -->
-
+    <script src="/index.js"></script>
 </body>
 </html>
