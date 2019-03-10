@@ -1,4 +1,5 @@
 const PHOTOS_UPLOADED = document.querySelector("#photosUploaded")
+const PHOTOS_FLEX = PHOTOS_UPLOADED.querySelector("#photosFlex")
 const FORM = /** @type {HTMLInputElement} */(document.querySelector("#form"));
 // FORM.addEventListener("submit", OnSubmit)
 
@@ -37,14 +38,19 @@ function sendData() {
             console.log("Success: ", r) // File param is empty
 
             for (i = 0; i < r.length; i++) {
-                image = document.createElement("img")
+                imageDiv = document.createElement("div")
+                imageDiv.classList.add("col-sm-6", "col-md-4", "col-lg-3", "col-xl-2", "d-flex", "flex-wrap")
 
                 // Error: Relative path doesn't work
                 // Error: Absolute path works but "Not allowed to load local resource"
                 // image.src = "C:\\Users\\knasu\\go\\src\\final-project\\photos\\c189a873fb8cae1060638ea6.png"
                 // Use URL to test appending to HTML
+                image = document.createElement("img")
                 image.src = "https://cdn0.tnwcdn.com/wp-content/blogs.dir/1/files/2018/02/google-pacman-796x419.jpg"
-                PHOTOS_UPLOADED.appendChild(image)
+                image.classList.add("img-thumbnail")
+                
+                imageDiv.appendChild(image)
+                PHOTOS_FLEX.appendChild(imageDiv)
             }
         })
         .catch(function(err) {
