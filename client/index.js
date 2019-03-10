@@ -13,11 +13,9 @@ function OnSubmit(e) {
 function sendData() {
     console.log("In sendData!!!")
     var formData = new FormData(FORM)
-    // console.log("formData: " + formData.keys())
-    for (var key of formData.keys()) {
-        // console.log("key: " + key + "; value: " + formData.get(key));
-        console.log(formData.get(key)); 
-    }
+
+    files = formData.getAll("uploadFile")
+    console.log(files)
 
     var params = {
         method: "POST",
@@ -36,18 +34,18 @@ function sendData() {
             return response.json()
         })
         .then(r => {
-            photoObj = JSON.stringify(r)
-            console.log("Success: ", photoObj) // File param is empty
-            console.log("r.Path: " + r.Path)
+            console.log("Success: ", r) // File param is empty
 
-            image = document.createElement("img")
+            for (i = 0; i < r.length; i++) {
+                image = document.createElement("img")
 
-            // Error: Relative path doesn't work
-            // Error: Absolute path works but "Not allowed to load local resource"
-            // image.src = "C:\\Users\\knasu\\go\\src\\final-project\\photos\\c189a873fb8cae1060638ea6.png"
-            // Use URL to test appending to HTML
-            image.src = "https://cdn0.tnwcdn.com/wp-content/blogs.dir/1/files/2018/02/google-pacman-796x419.jpg"
-            PHOTOS_UPLOADED.appendChild(image)
+                // Error: Relative path doesn't work
+                // Error: Absolute path works but "Not allowed to load local resource"
+                // image.src = "C:\\Users\\knasu\\go\\src\\final-project\\photos\\c189a873fb8cae1060638ea6.png"
+                // Use URL to test appending to HTML
+                image.src = "https://cdn0.tnwcdn.com/wp-content/blogs.dir/1/files/2018/02/google-pacman-796x419.jpg"
+                PHOTOS_UPLOADED.appendChild(image)
+            }
         })
         .catch(function(err) {
             console.log(err)
