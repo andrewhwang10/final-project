@@ -15,6 +15,8 @@ func main() {
 	fs := http.FileServer(http.Dir(handlers.UploadPath))
 	mux.Handle("/files/", http.StripPrefix("/files", fs))
 
+	wrappedMux := handlers.NewHeaderCors(mux)
+
 	log.Print("Server started on localhost:8080, use /upload for uploading files and /files/{fileName} for downloading")
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	log.Fatal(http.ListenAndServe(":8080", wrappedMux))
 }

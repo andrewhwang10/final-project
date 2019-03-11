@@ -131,7 +131,7 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("photosToUpload: %v\n", photosToUpload)
 
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Origin", "*") // Done in cors.go but this is still needed to avoid browser error?
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(photosToUpload); err != nil {
 		http.Error(w, "Error encoding photoUploaded struct into JSON: %v\n", http.StatusInternalServerError)
