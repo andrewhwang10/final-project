@@ -3,7 +3,7 @@ package main
 /***  STARTER CODE FROM: https://zupzup.org/go-http-file-upload-download/  ***/
 
 import (
-	"final-project/handlers"
+	"final-project/servers/gateway/handlers"
 	"log"
 	"net/http"
 )
