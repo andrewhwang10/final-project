@@ -21,7 +21,10 @@ function sendData() {
     var params = {
         method: "POST",
         body: formData,
-        mode: 'cors'
+        mode: 'cors',
+        // headers:{ // Caused cors error when go run main.go
+        //     'Access-Control-Allow-Origin': '*'
+        // }
     }
 
     fetch("http://localhost:8080/upload", params)

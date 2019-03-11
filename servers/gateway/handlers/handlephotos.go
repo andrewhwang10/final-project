@@ -73,8 +73,6 @@ func UploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("uploadedFiles: %v\n", uploadedFiles)
 
-	// Useful tip (for uploading multiple photos): "To access multiple values of the same key, call ParseForm and then inspect Request.Form directly."
-
 	// In Postman, set key to "type" and value to MIME file type of attachment (https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#Image_types)
 	// Previously: PostFormValue
 	fileType := r.FormValue("type")

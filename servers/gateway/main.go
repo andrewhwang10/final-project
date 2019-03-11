@@ -9,11 +9,12 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/upload", handlers.UploadFileHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/upload", handlers.UploadFileHandler)
 
 	fs := http.FileServer(http.Dir(handlers.UploadPath))
-	http.Handle("/files/", http.StripPrefix("/files", fs))
+	mux.Handle("/files/", http.StripPrefix("/files", fs))
 
 	log.Print("Server started on localhost:8080, use /upload for uploading files and /files/{fileName} for downloading")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }
