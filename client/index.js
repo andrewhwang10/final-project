@@ -21,9 +21,10 @@ function sendData() {
     var params = {
         method: "POST",
         body: formData,
-        mode: 'cors',
-        // headers:{ // Caused cors error when go run main.go
+        mode: 'cors'//,
+        // headers:{ // Error when go run main.go (req. headers); Without it in docker, error (405 and not 200)
         //     'Access-Control-Allow-Origin': '*'
+        //     //'Access-Control-Allow-Methods': 'GET, PUT, POST, PATCH, DELETE'
         // }
     }
 
