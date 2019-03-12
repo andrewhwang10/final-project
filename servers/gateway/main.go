@@ -10,10 +10,8 @@ import (
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/upload", handlers.UploadFileHandler)
 
-	fs := http.FileServer(http.Dir(handlers.UploadPath))
-	mux.Handle("/files/", http.StripPrefix("/files", fs))
+	// PROXY to phototagging microservice mux.HandleFunc("/upload", handlers.UploadFileHandler)
 
 	wrappedMux := handlers.NewHeaderCors(mux)
 
