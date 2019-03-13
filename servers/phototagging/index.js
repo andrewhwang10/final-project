@@ -1,0 +1,91 @@
+const express = require("express");
+const morgan = require("morgan");
+var mongoose = require("mongoose");
+var modules = require("./modules.js");
+// var Channel = require("./channel.js"); // Used to put general channel
+var photosRouter = require("./photosRouter.js");
+var tagsRouter = require("./tagsRouter.js");
+// var amqp = require('amqplib/callback_api'); // RabbitMQ
+
+
+const app = express();
+
+const addr = process.env.ADDR || "messagingcontainer:80";
+const [host, port] = addr.split(":");
+
+app.use(express.json());
+app.use(morgan("dev"));
+
+var mongoURL = process.env.MONGO_URL || 'mongodb://mongocontainer:27017/mongoDB';
+
+mongoose.connect(mongoURL, function (err, db) {
+    if (err) {
+        console.log ('ERROR connecting to: ' + mongoURL + '. ' + err);
+    } else {
+        console.log ('Succeeded connected to: ' + mongoURL);
+
+        /*
+        Channel.find({name: "general"}).then(function(genChannel) {
+            if (genChannel.length == 0) {
+                var general = new Channel ({
+                    name: "general",
+                    description: "General (default) channel",
+                    privateChannel: false,
+                    members: [],
+                    createdAt: Date.now(),
+                    editedAt: Date.now()
+                });
+                
+                general.save().catch(error => {console.log('Error saving general channel: ', error.message)});
+            }
+        }).catch(error => {console.log('Error finding if general channel exists: ', error.message)})
+        */
+    }
+}).catch(error => {console.log('Error connecting to db: ', error.message); });
+
+/*
+var rabbitURL = 'amqp://rabbitcontainer:5672'
+amqp.connect(rabbitURL, function(err, conn) {
+    if (err) {
+		console.log("Failed to connect to Rabbit Instance from Messages microservice - INDEX.JS");
+        console.log(err);
+        process.exit(1);
+    }
+    
+    console.log("Creating channel in Messaging microservice - INDEX.JS...")
+    conn.createChannel(function(err, ch) {
+        if (err) {
+            console.log("Failed to create channel from Messages microservice - INDEX.JS");
+            console.log(err);
+			process.exit(1);
+        }
+        
+        var q = 'messageq';
+
+        console.log("Creating messageq - INDEX.JS")
+        ch.assertQueue(q, {durable: false});
+    });
+});
+*/
+
+app.use("/", function(req, res, next) {
+    console.log("X-User in INDEX.JS: " + req.get("X-User"));
+    if (!req.get("X-User")) {
+        res.status(401).send("User is not authenticated");
+    } else {
+        next();
+    }
+});
+
+app.use("/photos", photosRouter);
+app.use("/tags", tagsRouter);
+
+
+app.use(function(err, req, res, next) {
+    console.log(err);
+    res.status(422).send({error: err.message});
+})
+
+app.listen(port, host, () => {
+    console.log(`server is listening at http://${addr}...`);
+});

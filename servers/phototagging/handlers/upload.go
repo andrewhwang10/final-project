@@ -13,7 +13,7 @@ import (
 )
 
 const maxUploadSize = 4 * 1024 * 1024 // 4 mb
-const UploadPath = "./photos"         // Directory that photos will be saving into
+const UploadPath = "./"               // Directory that photos will be saving into
 
 const parseFormFail = "PARSE FORM FAILED"
 const fileTooBig = "FILE TOO BIG"
