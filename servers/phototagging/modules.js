@@ -2,6 +2,7 @@
 // var Tag = require("./tag.js");
 var multiparty = require('multiparty');
 const fs = require('fs');
+var path = require('path');
 // var util = require('util');
 
 
@@ -10,6 +11,18 @@ function getUser(req) {
     return user;
 }
 
+/*
+// EC2's / --> container's /?
+// How to mount volume?
+// If want to use /path instead, don't need to create folder in EC2 first
+    docker run -d \
+    -v /:/ \
+    --name phototaggingcontainer \
+    knasu13/phototagging
+    
+// How to save file to mounted volume; just save to the mounted filepath in container? (SECOND in -v /:/)
+
+*/
 function photos(req, res, next) {
     // Will add user later
     // let xUser = getUser(req);
@@ -27,28 +40,47 @@ function photos(req, res, next) {
         case "POST":
             var form = new multiparty.Form();
     
+            /* TODO:
+                - Create new random filename (done automatically?)
+                - Save URL to volume
+                - Create Photo object with new URL
+                - Save Photo object to mongodb
+            */
             form.parse(req, function(err, fields, files) {
                 console.log(fields.type)
                 console.log(files.uploadFile)
-                console.log(files.uploadFile[0].path)
-                path = files.uploadFile[0].path
-                indexStart = path.indexOf("Temp") + 5
-                renamedPath = path.substr(0, indexStart)
-                
-                fs.rename(path, renamedPath+'testimage.png', (err) => {
-                    if (err) throw err;
-                    fs.stat(renamedPath, (err, stats) => {
-                      if (err) throw err;
-                      console.log(`stats: ${JSON.stringify(stats)}`);
-                    });
-                  });
+
+                // Handle multiple files in upload
+                for (i = 0; i < files.uploadFile.length; i++) {
+                    console.log("FILE " + i + ": ")
+                    
+                    defaultPath = files.uploadFile[i].path
+                    console.log("defaultPath: " + defaultPath)
+    
+                    lastIndex = defaultPath.indexOf(path.basename(defaultPath))
+                    pathNoBase = defaultPath.substr(0, lastIndex)
+                    console.log("pathNoBase: " + pathNoBase)
+                    photoName = files.uploadFile[i].originalFilename
+                    // newPath = pathNoBase + photoName
+                    newPath = process.env.PWD.substr(2) + "/" + photoName // TESTING that file is saving
+                    console.log("newPath: " + newPath)
+    
+                    fs.rename(defaultPath, newPath, (err) => {
+                        if (err) throw err;
+                        fs.stat(newPath, (err, stats) => {
+                          if (err) throw err;
+                          console.log(`stats: ${JSON.stringify(stats)}`);
+                          console.log("newPath: " + newPath)
+                        });
+                      });
+                }
                 // res.send(util.inspect({fields: fields, files: files}));
                 res.send(files)
             });
 
             // res.send(req.body)
-            // SAVE INTO EC2 ROOT...
-            // Is this done by saving into the root of the docker container?
+
+            // TODO: Save actual photo in 
         /*
             var newPhoto = new Photo(req.body); // req.body is the form data!
             // newChannel.members = [xUserID];
