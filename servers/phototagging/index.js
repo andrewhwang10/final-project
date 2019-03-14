@@ -1,6 +1,6 @@
 const express = require("express");
 // const morgan = require("morgan");
-// var mongoose = require("mongoose");
+var mongoose = require("mongoose");
 var modules = require("./modules.js");
 // var Channel = require("./channel.js"); // Used to put general channel
 // var photosRouter = require("./photosRouter.js");
@@ -10,41 +10,25 @@ var modules = require("./modules.js");
 
 const app = express();
 
-// const addr = process.env.ADDR || "phototaggingcontainer:80";
-const addr = "localhost:4000"
+const addr = process.env.ADDR || "phototaggingcontainer:80";
+// const addr = "localhost:4000"
 const [host, port] = addr.split(":");
 
 app.use(express.json());
 // app.use(morgan("dev"));
 
-/*
+// /*
 var mongoURL = process.env.MONGO_URL || 'mongodb://mongocontainer:27017/mongoDB';
+// var mongoURL = 'mongodb://localhost:27017/mongoDB'; // not working
 
 mongoose.connect(mongoURL, function (err, db) {
     if (err) {
         console.log ('ERROR connecting to: ' + mongoURL + '. ' + err);
     } else {
-        console.log ('Succeeded connected to: ' + mongoURL);
-
-        
-        Channel.find({name: "general"}).then(function(genChannel) {
-            if (genChannel.length == 0) {
-                var general = new Channel ({
-                    name: "general",
-                    description: "General (default) channel",
-                    privateChannel: false,
-                    members: [],
-                    createdAt: Date.now(),
-                    editedAt: Date.now()
-                });
-                
-                general.save().catch(error => {console.log('Error saving general channel: ', error.message)});
-            }
-        }).catch(error => {console.log('Error finding if general channel exists: ', error.message)})
-        
+        console.log ('Succeeded connected to: ' + mongoURL);     
     }
 }).catch(error => {console.log('Error connecting to db: ', error.message); });
-*/
+// */
 
 /*
 var rabbitURL = 'amqp://rabbitcontainer:5672'

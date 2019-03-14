@@ -1,4 +1,4 @@
-// var Photo = require("./photo.js");
+var Photo = require("./photo.js");
 // var Tag = require("./tag.js");
 var multiparty = require('multiparty');
 const fs = require('fs');
@@ -21,18 +21,19 @@ function getUser(req) {
     knasu13/phototagging
     
 // How to save file to mounted volume; just save to the mounted filepath in container? (SECOND in -v /:/)
+// Considering fs.rename being asynchronous, is there a better place to put Photo saving?
 
 */
 function photos(req, res, next) {
     // Will add user later
-    // let xUser = getUser(req);
+    let xUser = getUser(req);
     // let xUserID = JSON.parse(xUser).id
 
     switch (req.method) {
         case "GET":
-            // Photo.find({}, function(err, photos) {
-            //     res.status(200).json(photos);
-            // }).catch(next);
+            Photo.find({}, function(err, photos) {
+                res.status(200).json(photos);
+            }).catch(next);
             // Photo.find({ $or: [{privateChannel: false}, {privateChannel: true, members: xUserID}] }, function (err, channels) {
             //     res.json(channels);
             // }).catch(next);
@@ -49,30 +50,58 @@ function photos(req, res, next) {
             form.parse(req, function(err, fields, files) {
                 console.log(fields.type)
                 console.log(files.uploadFile)
+                console.log(xUser)
 
                 // Handle multiple files in upload
                 for (i = 0; i < files.uploadFile.length; i++) {
                     console.log("FILE " + i + ": ")
                     
                     defaultPath = files.uploadFile[i].path
-                    console.log("defaultPath: " + defaultPath)
+                    defaultPhotoName = path.basename(defaultPath)
+                    // console.log("defaultPath: " + defaultPath)
     
-                    lastIndex = defaultPath.indexOf(path.basename(defaultPath))
-                    pathNoBase = defaultPath.substr(0, lastIndex)
-                    console.log("pathNoBase: " + pathNoBase)
-                    photoName = files.uploadFile[i].originalFilename
+                    // lastIndex = defaultPath.indexOf(defaultFileName)
+                    // pathNoBase = defaultPath.substr(0, lastIndex)
+                    // console.log("pathNoBase: " + pathNoBase)
+
+                    originalPhotoName = files.uploadFile[i].originalFilename
+
                     // newPath = pathNoBase + photoName
-                    newPath = process.env.PWD.substr(2) + "/" + photoName // TESTING that file is saving
-                    console.log("newPath: " + newPath)
+                    // newPath = process.env.PWD.substr(2) + "/" + photoName // TESTING that file is saving
+                    // newPath = process.env.PWD.substr(2) + "/" + defaultPhotoName // TESTING that file is saving
+                    newPath = "/" + defaultPhotoName
+                    console.log("newPath (SHOULD BE NEW NAME): " + defaultPhotoName)
+
+                    // /*
+                    var newPhoto = new Photo();
+                    newPhoto.url = newPath;
+                    newPhoto.originalPhotoName = originalPhotoName
+                    newPhoto.creator = xUser;  
+                    newPhoto.createdAt = Date.now();
+                    newPhoto.editedAt = Date.now();
+
+                    Photo.find({originalPhotoName: newPhoto.originalPhotoName}, function(err, photo) {
+                        if (photo.length == 0) {
+                            newPhoto.save().then(function(savedPhoto) {
+                                // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
+                                // sendToQueue(channelToSend);
+                                res.status(201).json(savedPhoto);
+                            })
+                        } else {
+                            console.log("Photo named " + newPhoto.originalPhotoName + " already exists")
+                        }
+                    }).catch(next);
+                    // */
+
     
                     fs.rename(defaultPath, newPath, (err) => {
                         if (err) throw err;
-                        fs.stat(newPath, (err, stats) => {
-                          if (err) throw err;
-                          console.log(`stats: ${JSON.stringify(stats)}`);
-                          console.log("newPath: " + newPath)
-                        });
-                      });
+                        console.log("FILE RENAMED: " + newPath)
+                        // fs.stat(newPath, (err, stats) => {
+                        //   if (err) throw err;
+                        //   console.log(`stats: ${JSON.stringify(stats)}`);
+                        // });
+                    });
                 }
                 // res.send(util.inspect({fields: fields, files: files}));
                 res.send(files)

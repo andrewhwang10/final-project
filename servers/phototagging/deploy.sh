@@ -1,22 +1,5 @@
 sh build.sh
 
+docker push knasu13/phototagging
 
-# --network privDocker \
-docker run -d \
--e MONGO_INITDB_DATABASE=mongoDB \
---name mongocontainer \
-mongo
-
-# docker run -d \
-# --hostname my-rabbit \
-# --name rabbitcontainer \
-# --network privDocker \
-# rabbitmq:3-management
-
-# EC2's /photos --> container's /photos...
-# Using root / instead so i don't need to create a folder beforehand
-# If run locally and give root, what would be mounted into the container?
-docker run -d \
--v /:/ \
---name phototaggingcontainer \
-knasu13/phototagging
+ssh -i ~/.ssh/KDellLaptop.pem ec2-user@ec2-35-163-68-8.us-west-2.compute.amazonaws.com 'bash -s' < update.sh
