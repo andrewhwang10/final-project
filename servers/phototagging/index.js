@@ -1,21 +1,23 @@
 const express = require("express");
-const morgan = require("morgan");
-var mongoose = require("mongoose");
+// const morgan = require("morgan");
+// var mongoose = require("mongoose");
 var modules = require("./modules.js");
 // var Channel = require("./channel.js"); // Used to put general channel
-var photosRouter = require("./photosRouter.js");
-var tagsRouter = require("./tagsRouter.js");
+// var photosRouter = require("./photosRouter.js");
+// var tagsRouter = require("./tagsRouter.js");
 // var amqp = require('amqplib/callback_api'); // RabbitMQ
 
 
 const app = express();
 
-const addr = process.env.ADDR || "messagingcontainer:80";
+// const addr = process.env.ADDR || "phototaggingcontainer:80";
+const addr = "localhost:4000"
 const [host, port] = addr.split(":");
 
 app.use(express.json());
-app.use(morgan("dev"));
+// app.use(morgan("dev"));
 
+/*
 var mongoURL = process.env.MONGO_URL || 'mongodb://mongocontainer:27017/mongoDB';
 
 mongoose.connect(mongoURL, function (err, db) {
@@ -24,7 +26,7 @@ mongoose.connect(mongoURL, function (err, db) {
     } else {
         console.log ('Succeeded connected to: ' + mongoURL);
 
-        /*
+        
         Channel.find({name: "general"}).then(function(genChannel) {
             if (genChannel.length == 0) {
                 var general = new Channel ({
@@ -39,9 +41,10 @@ mongoose.connect(mongoURL, function (err, db) {
                 general.save().catch(error => {console.log('Error saving general channel: ', error.message)});
             }
         }).catch(error => {console.log('Error finding if general channel exists: ', error.message)})
-        */
+        
     }
 }).catch(error => {console.log('Error connecting to db: ', error.message); });
+*/
 
 /*
 var rabbitURL = 'amqp://rabbitcontainer:5672'
@@ -69,16 +72,19 @@ amqp.connect(rabbitURL, function(err, conn) {
 */
 
 app.use("/", function(req, res, next) {
-    console.log("X-User in INDEX.JS: " + req.get("X-User"));
-    if (!req.get("X-User")) {
-        res.status(401).send("User is not authenticated");
-    } else {
+    // console.log("X-User in INDEX.JS: " + req.get("X-User"));
+    // if (!req.get("X-User")) {
+    //     res.status(401).send("User is not authenticated");
+    // } else {
         next();
-    }
+    // }
 });
 
-app.use("/photos", photosRouter);
-app.use("/tags", tagsRouter);
+// app.use("/photos", photosRouter);
+// app.use("/tags", tagsRouter);
+
+app.use("/photos", modules.photos);
+// app.use("/tags", modules.photo);
 
 
 app.use(function(err, req, res, next) {

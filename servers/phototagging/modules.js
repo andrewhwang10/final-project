@@ -1,5 +1,8 @@
-var Photo = require("./photo.js");
-var Tag = require("./tag.js");
+// var Photo = require("./photo.js");
+// var Tag = require("./tag.js");
+var multiparty = require('multiparty');
+const fs = require('fs');
+// var util = require('util');
 
 
 function getUser(req) {
@@ -14,15 +17,40 @@ function photos(req, res, next) {
 
     switch (req.method) {
         case "GET":
-            Photo.find({}, function(err, photos) {
-                res.status(200).json(photos);
-            }).catch(next);
+            // Photo.find({}, function(err, photos) {
+            //     res.status(200).json(photos);
+            // }).catch(next);
             // Photo.find({ $or: [{privateChannel: false}, {privateChannel: true, members: xUserID}] }, function (err, channels) {
             //     res.json(channels);
             // }).catch(next);
             break;
         case "POST":
-            var newPhoto = new Photo(req.body);
+            var form = new multiparty.Form();
+    
+            form.parse(req, function(err, fields, files) {
+                console.log(fields.type)
+                console.log(files.uploadFile)
+                console.log(files.uploadFile[0].path)
+                path = files.uploadFile[0].path
+                indexStart = path.indexOf("Temp") + 5
+                renamedPath = path.substr(0, indexStart)
+                
+                fs.rename(path, renamedPath+'testimage.png', (err) => {
+                    if (err) throw err;
+                    fs.stat(renamedPath, (err, stats) => {
+                      if (err) throw err;
+                      console.log(`stats: ${JSON.stringify(stats)}`);
+                    });
+                  });
+                // res.send(util.inspect({fields: fields, files: files}));
+                res.send(files)
+            });
+
+            // res.send(req.body)
+            // SAVE INTO EC2 ROOT...
+            // Is this done by saving into the root of the docker container?
+        /*
+            var newPhoto = new Photo(req.body); // req.body is the form data!
             // newChannel.members = [xUserID];
             newPhoto.createdAt = Date.now();
             // newPhoto.creator = xUser;
@@ -41,6 +69,7 @@ function photos(req, res, next) {
                     res.send("Photo named " + newPhoto.name + " already exists!")
                 }
             }).catch(next);
+            */
             break;
         default:
             res.send("Method is not allowed");
@@ -48,14 +77,14 @@ function photos(req, res, next) {
 }
 
 
-
+/*
 function specificPhoto(req, res, next) {
     let xUser = getUser(req);
     let photoID = req.params.photoID;
     // let xUserID = JSON.parse(xUser).id
 
     switch (req.method) {
-        /*
+        
         case "GET":
             Photo.findOne({_id: photoID}).then(function(photo) {
                 if (!photo) {
@@ -139,7 +168,7 @@ function specificPhoto(req, res, next) {
                 }
             }).catch(next);
             break;
-        */
+        
         case "DELETE":
             Photo.findOne({name: "general"}).then(function(photo) {
                 Photo.findOne({_id: photoID}).then(function(photo) {
@@ -177,3 +206,9 @@ function specificPhoto(req, res, next) {
             res.send("Method not allowed")
     }
 }
+
+// function tagOnPhoto(req, res, next) {
+
+// }
+*/
+exports.photos = photos
