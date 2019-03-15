@@ -3,6 +3,7 @@ var Photo = require("./photo.js");
 var multiparty = require('multiparty');
 const fs = require('fs');
 var path = require('path');
+var async = require('async');
 // var util = require('util');
 
 
@@ -47,31 +48,43 @@ function photos(req, res, next) {
                 - Create Photo object with new URL
                 - Save Photo object to mongodb
             */
+
             form.parse(req, function(err, fields, files) {
+                if (err) {
+                    console.log("ERROR IN FORM.PARSE")
+                    return;
+                }
                 console.log(fields.type)
-                console.log(files.uploadFile)
+                console.log(files.uploadFile + "length: " + files.uploadFile.length)
                 console.log(xUser)
 
+                formFields = fields
+                formFiles = files.uploadFile
+
+                console.log("formFiles INSIDE FORM.PARSE!!!: " + formFiles)
+
+                var photoObjects = []
+
                 // Handle multiple files in upload
-                for (i = 0; i < files.uploadFile.length; i++) {
-                    console.log("FILE " + i + ": ")
+                for (i = 0; i < formFiles.length; i++) {
+                    console.log("FILE " + i + "!")
                     
-                    defaultPath = files.uploadFile[i].path
+                    defaultPath = formFiles[i].path
                     defaultPhotoName = path.basename(defaultPath)
                     // console.log("defaultPath: " + defaultPath)
     
                     // lastIndex = defaultPath.indexOf(defaultFileName)
                     // pathNoBase = defaultPath.substr(0, lastIndex)
                     // console.log("pathNoBase: " + pathNoBase)
-
-                    originalPhotoName = files.uploadFile[i].originalFilename
-
+    
+                    originalPhotoName = formFiles[i].originalFilename
+    
                     // newPath = pathNoBase + photoName
                     // newPath = process.env.PWD.substr(2) + "/" + photoName // TESTING that file is saving
                     // newPath = process.env.PWD.substr(2) + "/" + defaultPhotoName // TESTING that file is saving
                     newPath = "/" + defaultPhotoName
                     console.log("newPath (SHOULD BE NEW NAME): " + defaultPhotoName)
-
+    
                     // /*
                     var newPhoto = new Photo();
                     newPhoto.url = newPath;
@@ -80,20 +93,65 @@ function photos(req, res, next) {
                     newPhoto.createdAt = Date.now();
                     newPhoto.editedAt = Date.now();
 
-                    Photo.find({originalPhotoName: newPhoto.originalPhotoName}, function(err, photo) {
-                        if (photo.length == 0) {
-                            newPhoto.save().then(function(savedPhoto) {
+                    photoObjects.push(newPhoto)
+
+                    fs.rename(defaultPath, newPhoto.url, (err) => {
+                        if (err) throw err;
+                        console.log("FILE RENAMED: " + newPhoto.url)
+                        // fs.stat(newPath, (err, stats) => {
+                        //   if (err) throw err;
+                        //   console.log(`stats: ${JSON.stringify(stats)}`);
+                        // });
+                    });
+                }
+
+                console.log("photoObjects: " + photoObjects)
+
+                async.forEachOf(photoObjects, function(photoObj, index, callback) {
+                    console.log("IN ASYNC")
+                    Photo.findOne({originalPhotoName: photoObj.originalPhotoName}).then(function(photo) {
+                        if (!photo) {
+                            photoObj.save().then(function(savedPhoto) {
+                                console.log("Saved photo: " + savedPhoto)
                                 // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
                                 // sendToQueue(channelToSend);
-                                res.status(201).json(savedPhoto);
+
+                                // fs used to be here
+
+                                // res.status(201).json(savedPhoto);
                             })
                         } else {
-                            console.log("Photo named " + newPhoto.originalPhotoName + " already exists")
+                            console.log("Photo named " + photoObj.originalPhotoName + " already exists")
                         }
                     }).catch(next);
-                    // */
-
+                }, function (err) {
+                    if (err) {
+                        console.log("ERR IN ASYNC: " + err.message);
+                    } 
+                });
     
+                    // Photo.find({originalPhotoName: newPhoto.originalPhotoName}, function(err, photo) {
+                    //     if (photo.length == 0) {
+                    //         newPhoto.save().then(function(savedPhoto) {
+                    //             // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
+                    //             // sendToQueue(channelToSend);
+                    //             fs.rename(defaultPath, newPath, (err) => {
+                    //                 if (err) throw err;
+                    //                 console.log("FILE RENAMED: " + newPath)
+                    //                 // fs.stat(newPath, (err, stats) => {
+                    //                 //   if (err) throw err;
+                    //                 //   console.log(`stats: ${JSON.stringify(stats)}`);
+                    //                 // });
+                    //             });
+                    //             // res.status(201).json(savedPhoto);
+                    //         })
+                    //     } else {
+                    //         console.log("Photo named " + newPhoto.originalPhotoName + " already exists")
+                    //     }
+                    // }).catch(next);
+                    // */
+    
+                    /*
                     fs.rename(defaultPath, newPath, (err) => {
                         if (err) throw err;
                         console.log("FILE RENAMED: " + newPath)
@@ -102,35 +160,10 @@ function photos(req, res, next) {
                         //   console.log(`stats: ${JSON.stringify(stats)}`);
                         // });
                     });
-                }
-                // res.send(util.inspect({fields: fields, files: files}));
-                res.send(files)
+                    */
+                res.send(formFiles)
             });
-
-            // res.send(req.body)
-
-            // TODO: Save actual photo in 
-        /*
-            var newPhoto = new Photo(req.body); // req.body is the form data!
-            // newChannel.members = [xUserID];
-            newPhoto.createdAt = Date.now();
-            // newPhoto.creator = xUser;
-            newPhoto.editedAt = Date.now();
-            
-            // How to handle duplicates?
-            Photo.find({name: newPhoto.name}, function(err, photo) {
-                if (photo.length == 0) {
-                    newPhoto.save().then(function(photo) {
-                        // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
-                        // sendToQueue(channelToSend);
-
-                        res.status(201).json(photo);
-                    }).catch(next);
-                } else {
-                    res.send("Photo named " + newPhoto.name + " already exists!")
-                }
-            }).catch(next);
-            */
+            // res.send(util.inspect({fields: fields, files: files}));
             break;
         default:
             res.send("Method is not allowed");

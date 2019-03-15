@@ -2,7 +2,7 @@ docker volume prune -f
 
 docker rm -f mongocontainer
 docker rm -f phototaggingcontainer
-docker network rm privDocker
+docker network rm privNet
 
 docker pull knasu13/phototagging
 
