@@ -12,8 +12,8 @@ var PhotoSchema = new mongoose.Schema({
 
 autoIncrement.initialize(mongoose);
 
-PhotoSchema.plugin(autoIncrement.plugin, 'photo');
+PhotoSchema.plugin(autoIncrement.plugin, 'Photo');
 
-var Photo = mongoose.model('photo', PhotoSchema);
+var Photo = mongoose.model('Photo', PhotoSchema);
 
 module.exports = Photo;

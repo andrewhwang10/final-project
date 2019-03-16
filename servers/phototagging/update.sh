@@ -2,11 +2,16 @@ docker volume prune -f
 
 docker rm -f mongocontainer
 docker rm -f phototaggingcontainer
+
+rm -rf /photos/*
+
 docker network rm privNet
+docker network create privNet
 
 docker pull knasu13/phototagging
 
-docker network create privNet
+# docker volume create --name photosvolume
+# mkdir ~/photos
 
 # IN GATEWAY
 # export TLSCERT=/etc/letsencrypt/live/tag.karinasu.me/fullchain.pem
@@ -29,7 +34,7 @@ mongo
 # If run locally and give root, what would be mounted into the container?
 docker run -d \
 -p 80:80 \
--v /:/photos \
+-v ~/photos:/photos \
 --network privNet \
 --name phototaggingcontainer \
 knasu13/phototagging
