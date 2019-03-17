@@ -113,7 +113,7 @@ function photos(req, res, next) {
 }
 
 // /photos/:photoID
-// photos/:photoID/:tagID
+// /photos/:photoID/:tagID
 function specificPhoto(req, res, next) {
     let xUser = getUser(req);
     let photoID = req.params.photoID;
@@ -208,7 +208,7 @@ function specificPhoto(req, res, next) {
                 if (tagID.length == 0) {
                     Photo.deleteOne({_id: photoID}, function(err) {
                         if (err) {
-                            res.send("Error: Could not delete photo: " + err)
+                            res.send("Error: Could not delete tag from photo: " + err)
                         }
                         res.status(200).send("Deleted photo")
                     }).catch(next);
@@ -255,7 +255,7 @@ function tags(req, res, next) {
                 var newTag = new Tag();
                 newTag.name = fields.name
 
-                // TODO: Revisit here to add members!!!
+                // TODO: Revisit here to add members!!! Need to be comma separated
                 newTag.members = fields.members
                 newTag.creator = xUser;
                 newTag.createdAt = Date.now();

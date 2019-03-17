@@ -65,10 +65,7 @@ app.use("/", function(req, res, next) {
 
 
 app.use("/photos", photosRouter);
-// app.use("/tags", tagsRouter);
-
-// app.use("/photos", modules.photos);
-// app.use("/tags", modules.photo);
+app.use("/tags", tagsRouter);
 
 
 app.use(function(err, req, res, next) {
