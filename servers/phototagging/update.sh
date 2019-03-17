@@ -3,7 +3,7 @@ docker volume prune -f
 docker rm -f mongocontainer
 docker rm -f phototaggingcontainer
 
-# rm -rf /photos/*
+rm -f ./photos/*
 
 docker network rm privNet
 docker network create privNet
