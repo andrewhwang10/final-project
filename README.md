@@ -160,21 +160,6 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
    <td colspan="3" >Implementation</td>
    <td>Response Codes</td>
   </tr>
-  <tr>
-   <td>POST 
-      <p>
-      /photos
-   </td>
-   <td>Uploads at least one new photo to the database and user account</td>
-   <td colspan="3" >The Photos microservice will handle when a user uploads an image by saving the image in the graph database associated with the UserID and datetime .
-   </td>
-   <td>201: Created
-      <p>
-      415: Unsupported media type
-      <p>
-      500: Internal server error
-   </td>
-  </tr>
    <tr>
       <td>
          <h3>GET /photos</h3>
@@ -188,6 +173,21 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
       <p>
       500: Internal server error
    </td>
+  </tr>
+   <tr>
+      <td>POST 
+         <p>
+         /photos
+      </td>
+      <td>Uploads at least one new photo to the database and user account</td>
+      <td colspan="3" >The Photos microservice will handle when a user uploads an image by saving the image in the graph database associated with the UserID and datetime .
+      </td>
+      <td>201: Created
+         <p>
+         415: Unsupported media type
+         <p>
+         500: Internal server error
+      </td>
   </tr>
   <tr>
    <td>
@@ -204,7 +204,37 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
       500: Internal server error
    </td>
   </tr>
-
+   <tr>
+      <td>
+         <h3>GET /photos/:photoID</h3>
+      </td>
+      <td>Gets a specific photo</td>
+      <td colspan="3" >Returns metadata about a specific photo.</td>
+      <td>200: Successfully retrieved photo
+         <p>
+         403: The request user is not the photo owner or the user is not a permitted viewer
+         <p>
+         404: PhotoID does not exist
+         <p>
+         500: Internal server error
+      </td>
+   </tr>
+   <tr>
+      <td>
+         <h3>POST /photos/:photoID</h3>
+      </td>
+      <td>Likes OR unlikes a specific photo</td>
+      <td colspan="3" >If the user is not already a liker, a like will be added. If the user is a liker, the like will be removed.</td>
+      <td>200: Successfully liked or unliked
+         <p>
+         403: The request user is not the photo owner or the user is not a permitted viewer
+         <p>
+         404: PhotoID does not exist
+         <p>
+         500: Internal server error
+      </td>
+   </tr>
+  <tr>
   <tr>
    <td>
       <h3>DELETE /photos/:photoID</h3>
@@ -224,11 +254,14 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
    <td>
       <h3>POST /photos/:photoID/:tagID</h3>
    </td>
-   <td>Adds one tag for a photo
-   </td>
+   <td>Adds one tag for a photo</td>
    <td colspan="3" >A user can tag a photo with an existing tag or a new one. When a user tags a photo, the Photos microservice will handle the event and update the database.
    </td>
-   <td>201: Created
+   <td>
+      <p>
+      201: Created
+      <p>
+      403: The user is not the photo or tag owner
       <p>
       500: Internal server error
    </td>
@@ -241,125 +274,124 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
    </td>
    <td colspan="3" >A user can remove a tag from a photo. The Photos microservice will handle this event and update the database.
    </td>
-   <td>200: Successfully deleted tag from photo
-<p>
-403: The request user is not the photo owner
-<p>
-404: PhotoID does not exist; TagID does not exist
-<p>
-500: Internal server error
+   <td>
+      <p>
+      200: Successfully removed tag
+      <p>
+      403: The user is not the photo or tag owner
+      <p>
+      404: PhotoID does not exist or TagID does not exist
+      <p>
+      500: Internal server error
    </td>
   </tr>
   <tr>
    <td>
-<h3>POST </h3>
-
-
-<h3>/users</h3>
+   <h3>POST </h3>
+   <h3>/users</h3>
    </td>
    <td>Creates a new user account
    </td>
    <td colspan="3" >One can create a new account via a POST request to /user. User is saved in a MySQL database.
    </td>
    <td>201: Created
-<p>
-415: Unsupported media type
-<p>
-500: Internal server error
+      <p>
+      415: Unsupported media type
+      <p>
+      500: Internal server error
    </td>
   </tr>
   <tr>
    <td>
 <h3>GET </h3>
-
-
 <h3>/tags</h3>
-
-
    </td>
-   <td>Returns all tags used
+   <td>Returns all tags the user is able to see
    </td>
-   <td colspan="3" >One can see all the tags they have created via a GET request to /tags.
+   <td colspan="3" >One can see all the tags they have created or shared to via a GET request to /tags.
    </td>
    <td>200: Successfully retrieved tags
-<p>
-400: Bad request
-<p>
-500: Internal server error
+      <p>
+      400: Bad request
+      <p>
+      500: Internal server error
+   </td>
+  </tr>
+   <tr>
+      <td>
+         <h3>POST /tags</h3>
+      </td>
+      <td>Creates a new tag</td>
+      <td colspan="3" >A user can create a new tag.</td>
+   <td>201: Successfully created tag
+      <p>
+      400: Bad request
+      <p>
+      500: Internal server error
    </td>
   </tr>
   <tr>
+  <tr>
    <td>
-<h3>GET /tags/{tagid}</h3>
-
-
+      <h3>GET /tags/:tagID</h3>
    </td>
-   <td>Gets metadata about specific tag
-   </td>
+   <td>Gets metadata about specific tag</td>
    <td colspan="3" >A user can request information about a specific tag, such as number of photos, friends shared with, etc.
    </td>
-   <td>200: Successfully retrieved data
-<p>
-400: Bad request
-<p>
-404: TagID does not exist
-<p>
-500: Internal server error
+   <td>200: Successfully retrieved tag information
+      <p>
+      400: Bad request
+      <p>
+      404: TagID does not exist
+      <p>
+      500: Internal server error
    </td>
   </tr>
   <tr>
    <td>
-<h3>DELETE /tags/{tagid}</h3>
-
-
+      <h3>DELETE /tags/:tagID</h3>
    </td>
-   <td>Deletes specific tag from all photos it is posted on
-   </td>
+   <td>Deletes specific tag from all photos it is posted on</td>
    <td colspan="3" >A user can delete a tag, resulting in the removal of that tag from all the photos it's attached to and removal of permissions for friends to see photos with this tag.
    </td>
    <td>200: Successfully deleted tag
-<p>
-403: The request user is not the tag creator
-<p>
-404: TagID does not exist
-<p>
-500: Internal server error
+      <p>
+      403: The request user is not the tag creator
+      <p>
+      404: TagID does not exist
+      <p>
+      500: Internal server error
    </td>
   </tr>
   <tr>
    <td>
-<h3>POST /tags/{tagid}/{userid}</h3>
-
-
+      <h3>POST /tags/:tagID/:userID</h3>
    </td>
    <td>Add a user to a tag
    </td>
    <td colspan="3" >An owner of photos can add friends to a tag so they can view photos with the tag.
    </td>
-   <td>201: Created
-<p>
-404: UserID does not exist
-<p>
-500: Internal server error
+   <td>200: Successfully added member to tag
+      <p>
+      404: UserID does not exist or TagID doesn't exist
+      <p>
+      500: Internal server error
    </td>
   </tr>
   <tr>
    <td>
-<h3>DELETE /tags/{tagid}/{userid}</h3>
-
-
+      <h3>DELETE /tags/:tagID/:userID</h3>
    </td>
-   <td>Delete a user from a tag
-   </td>
+   <td>Delete a user from a tag</td>
    <td colspan="3" >An owner of photos can remove friends from a tag, thus revoking their permission to view photos with the tag.
    </td>
    <td>200: Successfully deleted tag
-<p>
-403: The request user is not the tag creator
-<p>
-404: UserID or TagID does not exist
-<p>
-500: Internal server error
+      <p>
+      403: The request user is not the tag creator
+      <p>
+      404: UserID or TagID does not exist
+      <p>
+      500: Internal server error
    </td>
   </tr>
 </table>
