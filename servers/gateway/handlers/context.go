@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"math/rand"
 	"net/http"
 	"net/url"
 
@@ -17,9 +16,8 @@ type HandlerContext struct {
 	UserStore    users.Store    `json:"userStore,omitempty"`
 }
 
-func (ctx *HandlerContext) CustomDirector(targets []*url.URL) func(*http.Request) {
+func (ctx *HandlerContext) CustomDirector(targ *url.URL) func(*http.Request) {
 	return func(r *http.Request) {
-		targ := targets[rand.Int()%len(targets)]
 		sessState := SessionState{}
 		_, err := sessions.GetState(r, ctx.SigningKey, ctx.SessionStore, sessState)
 		if err == nil {
