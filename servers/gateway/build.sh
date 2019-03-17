@@ -1,3 +1,0 @@
-# GOOS=linux go build
-# docker build -t ...
-# go clean
