@@ -155,87 +155,87 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
 
 <table>
   <tr>
-   <td>Endpoint
-   </td>
-   <td>Description
-   </td>
-   <td colspan="3" >Implementation
-   </td>
-   <td>Response Codes
-   </td>
+   <td>Endpoint</td>
+   <td>Description</td>
+   <td colspan="3" >Implementation</td>
+   <td>Response Codes</td>
   </tr>
   <tr>
    <td>POST 
-<p>
-/photos
+      <p>
+      /photos
    </td>
-   <td>Uploads at least one new photo to the database and user account
-   </td>
+   <td>Uploads at least one new photo to the database and user account</td>
    <td colspan="3" >The Photos microservice will handle when a user uploads an image by saving the image in the graph database associated with the UserID and datetime .
    </td>
    <td>201: Created
-<p>
-415: Unsupported media type
-<p>
-500: Internal server error
+      <p>
+      415: Unsupported media type
+      <p>
+      500: Internal server error
+   </td>
+  </tr>
+   <tr>
+      <td>
+         <h3>GET /photos</h3>
+      </td>
+   <td>Gets photos all photos the user is able to view</td>
+   <td colspan="3" >The user can view all the photos they are authorized to see. To do this, the browser would send a GET request to /photos. 
+   </td>
+   <td>200: Successfully retrieved photos
+      <p>
+      400: Bad request
+      <p>
+      500: Internal server error
    </td>
   </tr>
   <tr>
    <td>
-<h3>GET /photos?tag={tagid}</h3>
-
-
+      <h3>GET /photos/:tagID</h3>
    </td>
    <td>Gets photos that are tagged with the specified tag
    </td>
    <td colspan="3" >The user can click a certain tag and see the photos it is used on. This will send a GET request to the Photos microservice, which will then return all photos with the specified tag that the client is allowed to see. 
    </td>
    <td>200: Successfully retrieved photos
-<p>
-400: Bad request
-<p>
-500: Internal server error
+      <p>
+      400: Bad request
+      <p>
+      500: Internal server error
    </td>
   </tr>
+
   <tr>
    <td>
-<h3>DELETE /photos/{photoID}</h3>
-
-
+      <h3>DELETE /photos/:photoID</h3>
    </td>
-   <td>Deletes a photo from the database and user account
-   </td>
-   <td colspan="3" >Deletes an image from the database. Returns a plain text message that the delete was successful and returns the images the client is able to see based on the previous search queries. If client was not in the middle of a search, it will return all images the user is allowed to see.
-   </td>
+   <td>Deletes a photo from the database and user account</td>
+   <td colspan="3" >Deletes an image from the database. Returns a plain text message that the delete was successful and returns the images the client is able to see based on the previous search queries. If client was not in the middle of a search, it will return all images the user is allowed to see.</td>
    <td>200: Successfully deleted photo
-<p>
-403: The request user is not the photo owner
-<p>
-404: PhotoID does not exist
-<p>
-500: Internal server error
+      <p>
+      403: The request user is not the photo owner
+      <p>
+      404: PhotoID does not exist
+      <p>
+      500: Internal server error
    </td>
   </tr>
   <tr>
    <td>
-<h3>POST /photos/{photoID}/{tagID}</h3>
-
-
+      <h3>POST /photos/:photoID/:tagID</h3>
    </td>
    <td>Adds one tag for a photo
    </td>
    <td colspan="3" >A user can tag a photo with an existing tag or a new one. When a user tags a photo, the Photos microservice will handle the event and update the database.
    </td>
    <td>201: Created
-<p>
-500: Internal server error
+      <p>
+      500: Internal server error
    </td>
   </tr>
   <tr>
    <td>
-<h3>DELETE /photos/{photoID}/{tagID}</h3>
-
-
+      <h3>DELETE /photos/:photoID/:tagID</h3>
    </td>
    <td>Deletes one tag from a photo
    </td>
@@ -256,8 +256,6 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
 
 
 <h3>/users</h3>
-
-
    </td>
    <td>Creates a new user account
    </td>
