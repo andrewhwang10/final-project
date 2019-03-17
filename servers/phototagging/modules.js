@@ -3,7 +3,7 @@ var Tag = require("./tag.js");
 var multiparty = require('multiparty');
 const fs = require('fs');
 var path = require('path');
-var async = require('async');
+// var async = require('async');
 
 
 function getUser(req) {
@@ -26,6 +26,7 @@ function photos(req, res, next) {
             }).catch(next);
             break;
             /*
+            // TODO: Send photo to client in GATEWAY (using URLS) instead of this microservice?
             Photo.find({}).then(function(photos) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
@@ -142,6 +143,27 @@ function photos(req, res, next) {
             break;
         default:
             res.send("Method is not allowed");
+    }
+}
+
+// CHeck if user is creator of tag or member of it
+function photosByTag(req, res, next) {
+    let xUser = getUser(req);
+    let tagID = req.params.tagID;
+
+    switch (req.method) {
+        case "GET":
+            Tag.findOne({ _id: tagID }).then(function(tag) {
+                if (!tag) {
+                    res.send("Tag doesn't exist");
+                }
+                Photo.find({ $or: [{'tags.members': xUser }, {creator: xUser}], tags: tag }).then(function(photos) {
+                    res.status(200).json(photos);
+                }).catch(next);
+            }).catch(next);
+            break;
+        default:
+            res.send("Method not allowed")
     }
 }
 
@@ -323,6 +345,7 @@ function tags(req, res, next) {
 // /tags/:tagID
 // TODO: TEST Deleting and then getting tags
 function specificTag(req, res, next) {
+    xUser = getUser(req)
     tagID = req.params.tagID;
 
     switch (req.method) {
@@ -343,6 +366,9 @@ function specificTag(req, res, next) {
             Tag.findOne({_id: tagID}).then(function(tag) {
                 if (!tag) {
                     res.send("Tag doesn't exist!");
+                }
+                if (tag.creator != xUser) {
+                    res.send("You are not the creator of this tag!")
                 }
                 Tag.deleteOne({_id: tagID}, function(err) {
                     if (err) {
@@ -412,7 +438,7 @@ function specificTagMembers(req, res, next) {
                 if (err) {
                     res.send("Error: Couldn't add to members: " + err)
                 }
-                res.status(201).send("User was added as member to tag")
+                res.status(201).send(tag)
             }).catch(next);
             break;
         case "DELETE":
@@ -431,6 +457,7 @@ function specificTagMembers(req, res, next) {
 
 exports.photos = photos
 exports.specificPhoto = specificPhoto
+exports.photosByTag = photosByTag
 exports.tags = tags
 exports.specificTag = specificTag
 exports.specificTagMembers = specificTagMembers
