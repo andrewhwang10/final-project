@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"crypto/rand"
 	"encoding/json"
+	"math/rand"
 	"net/http"
 	"net/url"
 
 	"github.com/info441/assignments-andrewhwang10/servers/gateway/models/users"
 	"github.com/info441/assignments-andrewhwang10/servers/gateway/sessions"
-	"github.com/info441/final-project/servers/gateway/handlers"
 )
 
 //HandlerContext represents a receiver for handlers to utilize and gain context
@@ -21,7 +20,7 @@ type HandlerContext struct {
 func (ctx *HandlerContext) CustomDirector(targets []*url.URL) func(*http.Request) {
 	return func(r *http.Request) {
 		targ := targets[rand.Int()%len(targets)]
-		sessState := handlers.SessionState{}
+		sessState := SessionState{}
 		_, err := sessions.GetState(r, ctx.SigningKey, ctx.SessionStore, sessState)
 		if err == nil {
 			obj, err := json.Marshal(sessState.User)
