@@ -3,9 +3,10 @@ package main
 /***  STARTER CODE FROM: https://zupzup.org/go-http-file-upload-download/  ***/
 
 import (
-	"final-project/servers/gateway/handlers"
 	"log"
 	"net/http"
+
+	"github.com/info441/final-project/servers/gateway/handlers"
 )
 
 func main() {
