@@ -3,7 +3,7 @@ docker volume prune -f
 docker rm -f mongocontainer
 docker rm -f phototaggingcontainer
 
-rm -rf /photos/*
+# rm -rf /photos/*
 
 docker network rm privNet
 docker network create privNet
@@ -11,7 +11,7 @@ docker network create privNet
 docker pull knasu13/phototagging
 
 # docker volume create --name photosvolume
-# mkdir ~/photos
+# mkdir /photos
 
 # IN GATEWAY
 # export TLSCERT=/etc/letsencrypt/live/tag.karinasu.me/fullchain.pem

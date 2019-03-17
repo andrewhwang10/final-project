@@ -3,15 +3,15 @@ const express = require("express");
 var mongoose = require("mongoose");
 var modules = require("./modules.js");
 // var Channel = require("./channel.js"); // Used to put general channel
-// var photosRouter = require("./photosRouter.js");
-// var tagsRouter = require("./tagsRouter.js");
+var photosRouter = require("./photosRouter.js");
+var tagsRouter = require("./tagsRouter.js");
 // var amqp = require('amqplib/callback_api'); // RabbitMQ
 
 
 const app = express();
 
-// const addr = process.env.ADDR || "phototaggingcontainer:80";
-const addr = "localhost:4000"
+const addr = process.env.ADDR || "phototaggingcontainer:80";
+// const addr = "localhost:4000"
 const [host, port] = addr.split(":");
 
 app.use(express.json());
@@ -64,10 +64,10 @@ app.use("/", function(req, res, next) {
     // }
 });
 
-// app.use("/photos", photosRouter);
+app.use("/photos", photosRouter);
 // app.use("/tags", tagsRouter);
 
-app.use("/photos", modules.photos);
+// app.use("/photos", modules.photos);
 // app.use("/tags", modules.photo);
 
 

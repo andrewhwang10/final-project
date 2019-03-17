@@ -72,7 +72,8 @@ function photos(req, res, next) {
                     // newPath = process.env.PWD.substr(2) + "/" + photoName // TESTING that file is saving
                     // newPath = process.env.PWD.substr(2) + "/" + defaultPhotoName // TESTING that file is saving
                     newPath = "/photos/" + defaultPhotoName
-                    console.log("newPath (SHOULD BE NEW NAME): " + defaultPhotoName)
+                    // console.log("(SHOULD BE NEW NAME): " + defaultPhotoName)
+                    console.log("newPath: " + newPath)
 
                     var newPhoto = new Photo();
                     newPhoto.url = newPath;
@@ -80,8 +81,9 @@ function photos(req, res, next) {
                     newPhoto.creator = xUser;
                     newPhoto.createdAt = Date.now();
                     newPhoto.editedAt = Date.now();
+                    console.log(newPhoto)
 
-                    // photoObjects.push(newPhoto)
+                    photoObjects.push(newPhoto)
 
                     // fs.copyFile(defaultPath, newPhoto.url, (err) => {
                     //     if (err) throw err;
@@ -100,6 +102,8 @@ function photos(req, res, next) {
 
                 console.log("photoObjects: " + photoObjects)
 
+                var savedPhotos = []
+
                 async.forEachOf(photoObjects, function(photoObj, index, callback) {
                     console.log("IN ASYNC")
                     Photo.findOne({originalPhotoName: photoObj.originalPhotoName}).then(function(photo) {
@@ -107,6 +111,7 @@ function photos(req, res, next) {
                             photoObj.save().then(function(savedPhoto) {
                                 photoObjects.push(savedPhoto)
                                 console.log("Saved photo: " + savedPhoto)
+                                savedPhotos.push(savedPhoto)
                                 // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
                                 // sendToQueue(channelToSend);
 
@@ -120,10 +125,10 @@ function photos(req, res, next) {
                     }).catch(next);
                 }, function (err) {
                     if (err) {
-                        console.log("ERR IN ASYNC: " + err.message);
+                        res.send("ERR IN ASYNC: " + err.message);
                     }
                 });
-                res.json(photoObjects)
+                res.json(savedPhotos)
             });
             break;
         default:
@@ -277,7 +282,7 @@ function specificTag(req, res, next) {
                         res.status(200).json(tag)
                     // }
                 }
-            });
+            }).catch(next);
             break;
         case "DELETE":
             Tag.findOne({_id: tagID}).then(function(tag) {
@@ -312,7 +317,43 @@ function specificTag(req, res, next) {
                         res.status(200).send("Tag has been deleted")
                     // }
                 }
-            });
+            }).catch(next);
+            break;
+        default:
+            res.send("Method not allowed")
+    }
+}
+
+function specificTagUser(req, res, next) {
+    tagID = req.params.tagID;
+    userID = req.params.userID;
+
+    switch (req.method) {
+        case "POST":
+            // currentMembers = channel.members
+            // memberIdInt = parseInt(member.id, 10)
+            // if (member.id == null || member.id.length == 0 || isNaN(memberIdInt)) {
+            //     res.send("User is invalid, cannot add as member")
+            // } else if (currentMembers.includes(memberIdInt)) {
+            //     res.send("User is already a member");
+            // } else {
+            //     currentMembers.push(memberIdInt);
+            //     members = {"members": currentMembers}
+
+            Tag.findOneAndUpdate({_id: tagID}, { $push: {"members": userID}, editedAt: Date.now()}, {returnNewDocument: true}, (err, tag) => {
+                if (err) {
+                    res.send("Error: Couldn't add to members: " + err)
+                }
+                res.status(201).send("User was added as member to tag")
+            }).catch(next);
+            break;
+        case "DELETE":
+            Tag.findOneAndUpdate({_id: tagID}, { $pull: {"members": userID}, editedAt: Date.now()}, {returnNewDocument: true}, (err, tag) => {
+                if (err) {
+                    res.send("Error: Couldn't deleete from members: " + err)
+                }
+                res.status(201).send("User was removed as member from tag")
+            }).catch(next);
             break;
         default:
             res.send("Method not allowed")
@@ -324,3 +365,4 @@ exports.photos = photos
 exports.specificPhoto = specificPhoto
 exports.tags = tags
 exports.specificTag = specificTag
+exports.specificTagUser = specificTagUser
