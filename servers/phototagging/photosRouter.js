@@ -6,7 +6,7 @@ var photosRouter = express.Router();
 // photosRouter.delete("/:photoID/:tagID", modules.tagOnPhoto);
 
 photosRouter.get("/:photoID", modules.specificPhoto); // GET /photos?tag={tagid} or GET /photos/:tagID
-// photosRouter.post("/:photoID/:tagID", modules.specificPhoto);
+photosRouter.post("/:photoID/:tagID", modules.specificPhoto);
 // photosRouter.patch("/:photoID", modules.specificPhoto);
 // photosRouter.delete("/:photoID", modules.specificPhoto);
 

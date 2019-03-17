@@ -10,8 +10,8 @@ var modules = require("./modules.js");
 
 const app = express();
 
-const addr = process.env.ADDR || "phototaggingcontainer:80";
-// const addr = "localhost:4000"
+// const addr = process.env.ADDR || "phototaggingcontainer:80";
+const addr = "localhost:4000"
 const [host, port] = addr.split(":");
 
 app.use(express.json());

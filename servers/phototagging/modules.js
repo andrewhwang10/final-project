@@ -1,5 +1,5 @@
 var Photo = require("./photo.js");
-// var Tag = require("./tag.js");
+var Tag = require("./tag.js");
 var multiparty = require('multiparty');
 const fs = require('fs');
 var path = require('path');
@@ -135,6 +135,7 @@ function photos(req, res, next) {
 function specificPhoto(req, res, next) {
     let xUser = getUser(req);
     let photoID = req.params.photoID;
+    let tagID = req.params.tagID;
     // let xUserID = JSON.parse(xUser).id
 
     switch (req.method) {
@@ -157,95 +158,169 @@ function specificPhoto(req, res, next) {
                 }
             });
             break;
-            /*
-        case "POST":
-            Channel.findOne({_id: channelID}).then(function(channel) {
-                if (!channel) {
-                    res.send("Channel doesn't exist!");
+        // Changed from POST to PATCH?
+        case "PATCH":
+            Photo.findOne({_id: photoID}).then(function(photo) {
+                if (!photo) {
+                    res.send("Photo doesn't exist!");
                 } else {
-                    if (channel.privateChannel && !channel.members.includes(xUserID)) {
-                        res.status(403).send("You are not a member of this private channel.");
-                    } else {
-                        var newMessage = new Message(req.body);
-                        newMessage.channelID = channelID;
-                        newMessage.creator = xUser;            
-                        newMessage.createdAt = Date.now();
-                        newMessage.editedAt = Date.now();
+                    // if (channel.privateChannel && !channel.members.includes(xUserID)) {
+                    //     res.status(403).send("You are not a member of this private channel.");
+                    // } else {
+                        Tag.findOne({_id: tagID}).then(function(tag) {
+                            // console.log("Add tag to photo: " + tag)
+                            updatedTags = photo.tags.push(tag)
 
-                        newMessage.save().then(function(message) {
-                            console.log("/////////////////////////////")
-                            console.log("Saving message in mongodb and sending to RabbitMQ queue")
+                            Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), tags: updatedTags}, {new: true}, (err, updatedPhoto) => {
+                                if (err) {
+                                    res.send("Error: Couldn't update (add tag to) photo: " + err);
+                                } else {
+                                    // channelToSend = createChannelEvent(CHANNEL_UPDATE, channel, false);
+                                    // sendToQueue(channelToSend);
+                                    res.json(updatedPhoto);
+                                }
+                            });
+            
+                            // newMessage.save().then(function(message) {
+                            //     console.log("/////////////////////////////")
+                            //     console.log("Saving message in mongodb and sending to RabbitMQ queue")
 
-                            eventToSend = createMessageEvent(MESSAGE_NEW, message, channel, false);
-                            sendToQueue(eventToSend);
-                            
-                            console.log("/////////////////////////////")
-                            res.status(201).json(message)
+                            //     eventToSend = createMessageEvent(MESSAGE_NEW, message, channel, false);
+                            //     sendToQueue(eventToSend);
+                                
+                            //     console.log("/////////////////////////////")
+                            //     res.status(201).json(message)
+                            // });
+
                         }).catch(next);
-                    }
+                    // }
                 }
             });
             break;
-        case "PATCH":
-            Channel.findOne({_id: channelID}).then(function(channel) {
-                if (!channel) {
-                    res.send("Channel doesn't exist!");
+            
+        case "DELETE":
+            Photo.findOne({_id: photoID}).then(function(photo) {
+                if (!photo) {
+                    res.send("Photo doesn't exist!");
                 } else {
-                    if (channel.creator != xUser) {
-                        res.status(403).send("You are not the creator of this channel.");
-                    } else {
-                        Channel.findOneAndUpdate({_id: channelID}, {editedAt: Date.now(), name: req.body.name, description: req.body.description}, {new: true}, (err, channel) => {
-                            if (err) {
-                                res.send("Error: Couldn't update channel: " + err);
-                            } else {
-                                channelToSend = createChannelEvent(CHANNEL_UPDATE, channel, false);
-                                sendToQueue(channelToSend);
-                                res.json(channel);
-                            }
-                        });
-                    }
+                    // if (photo.creator != xUser) {
+                    //     res.status(403).send("You are not the creator of this photo.");
+                    // } else {
+                    Photo.deleteOne({_id: photoID}, function(err) {
+                        if (err) {
+                            res.send("Error: Could not delete photo: " + err)
+                        }
+                        res.send("Deleted photo")
+                        // eventToSend = createChannelEvent(CHANNEL_DELETE, channel, true)
+                        // sendToQueue(eventToSend);
+                    }).catch(next);
                 }
             }).catch(next);
             break;
-        
-        case "DELETE":
-            Photo.findOne({name: "general"}).then(function(photo) {
-                Photo.findOne({_id: photoID}).then(function(photo) {
-                    if (!photo) {
-                        res.send("Photo doesn't exist!");
-                    } else {
-                        // if (photo.creator != xUser) {
-                        //     res.status(403).send("You are not the creator of this channel.");
-                        // } else {
-                            Photo.deleteOne({_id: phooID}, function(err) {
-                                if (err) {
-                                    res.send("Error: Could not delete channel: " + err)
-                                }
-                                // eventToSend = createChannelEvent(CHANNEL_DELETE, channel, true)
-                                // sendToQueue(eventToSend);
-                            }).catch(next);
-
-                            // Message.deleteMany({channelID: channelID}, function(err, messages) {
-                            //     if (err) {
-                            //         res.send("Error: Couldn't delete messages: " + err)
-                            //     } else {
-                            //         console.log(messages)
-                            //         if (messages.deletedCount == 0) {
-                            //             res.send("Channel has been removed");
-                            //         } else {
-                            //             res.send("Channel and messages have been removed");
-                            //         }
-                            //     }
-                            // }).catch(next);
-                    }
-                });
-            }).catch(next);
-            break;
-            */
         default:
             res.send("Method not allowed")
     }
 }
 
+function tags(req, res, next) {
+    switch (req.method) {
+        case "GET":
+            Tag.find({}, function(err, tags) {
+                res.status(200).json(tags);
+            }).catch(next);
+            // Photo.find({ $or: [{privateChannel: false}, {privateChannel: true, members: xUserID}] }, function (err, channels) {
+            //     res.json(channels);
+            // }).catch(next);
+            break;
+        case "POST":
+            var form = new multiparty.Form();
+
+            form.parse(req, function(err, fields, files) {
+                if (err) {
+                    console.log("ERROR IN FORM.PARSE")
+                    return;
+                }
+
+                console.log(fields)
+                console.log(fields.name)
+                console.log(fields.members)
+                
+                var newTag = new Tag();
+                newTag.name = fields.name
+                newTag.members = fields.members
+                newTag.creator = xUser;
+                newTag.createdAt = Date.now();
+                newTag.editedAt = Date.now();
+
+                newTag.save().then(function(savedTag) {
+                    res.status(201).json(savedTag)
+                }).catch(next);
+            });
+            break;
+        default:
+            res.send("Method not allowed")
+    }
+}
+
+function specificTag(req, res, next) {
+    tagID = req.params.tagID;
+
+    switch (req.method) {
+        case "GET":
+            Tag.findOne({_id: tagID}).then(function(tag) {
+                if (!tag) {
+                    res.send("Tag doesn't exist!");
+                } else {
+                    // if (!tag.members.includes(xUserID)) {
+                    //     res.status(403).send("You are not a registered viewer of any tags on this photo.");
+                    // } else {
+                        res.status(200).json(tag)
+                    // }
+                }
+            });
+            break;
+        case "DELETE":
+            Tag.findOne({_id: tagID}).then(function(tag) {
+                if (!tag) {
+                    res.send("Tag doesn't exist!");
+                } else {
+                    // Photo.find({tags: tagID}, function (err, photos) {
+                        //{editedAt: Date.now(), tags: updatedTags}
+                        // or tag._id
+                        // {new: true},
+                        // no need array filters?
+                        Photo.updateMany({tags: tagID}, { $pull: {tags: tagID}})
+                    //  }).catch(next);
+                    /*
+                    updatedTags = photo.tags.push(tag)
+
+                    Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), tags: updatedTags}, {new: true}, (err, updatedPhoto) => {
+                        if (err) {
+                            res.send("Error: Couldn't update (add tag to) photo: " + err);
+                        } else {
+                            // channelToSend = createChannelEvent(CHANNEL_UPDATE, channel, false); 
+                            // sendToQueue(channelToSend);
+                            res.json(updatedPhoto);
+                        }
+                    });
+                    */
+
+                    // check if user is creator
+                    // if (!tag.members.includes(xUserID)) {
+                    //     res.status(403).send("You are not a registered viewer of any tags on this photo.");
+                    // } else {
+                        res.status(200).send("Tag has been deleted")
+                    // }
+                }
+            });
+            break;
+        default:
+            res.send("Method not allowed")
+    }
+}
+
+
 exports.photos = photos
-exports.photos = specificPhoto
+exports.specificPhoto = specificPhoto
+exports.tags = tags
+exports.specificTag = specificTag
