@@ -12,29 +12,22 @@ function getUser(req) {
 }
 
 function photos(req, res, next) {
-    // Will add user later
+    // TODO: Return error if X-User header doesn't exist
     let xUser = getUser(req);
     // let xUserID = JSON.parse(xUser).id
 
+    // TODO: Send multiple photos in one response
     switch (req.method) {
         case "GET":
+            // TODO: Only show images that user can see (shared tag or creator)
+            // { $or: [{privateChannel: false}, {privateChannel: true, members: xUserID}] }
             Photo.find({}, function(err, photos) {
                 res.status(200).json(photos);
             }).catch(next);
-            // Photo.find({ $or: [{privateChannel: false}, {privateChannel: true, members: xUserID}] }, function (err, channels) {
-            //     res.json(channels);
-            // }).catch(next);
             break;
+
         case "POST":
             var form = new multiparty.Form();
-    
-            /* TODO:
-                - Create new random filename (done automatically?)
-                - Save file to VOLUME
-                - Create Photo object with new URL
-                - Save Photo object to mongodb
-            */
-
             form.parse(req, function(err, fields, files) {
                 if (err) {
                     console.log("ERROR IN FORM.PARSE")
@@ -60,43 +53,27 @@ function photos(req, res, next) {
                     defaultPath = file.path
                     defaultPaths.push(defaultPath)
                     defaultPhotoName = path.basename(defaultPath)
-                    // console.log("defaultPath: " + defaultPath)
-    
-                    // lastIndex = defaultPath.indexOf(defaultFileName)
-                    // pathNoBase = defaultPath.substr(0, lastIndex)
-                    // console.log("pathNoBase: " + pathNoBase)
     
                     originalPhotoName = file.originalFilename
     
-                    // newPath = pathNoBase + photoName
-                    // newPath = process.env.PWD.substr(2) + "/" + photoName // TESTING that file is saving
-                    // newPath = process.env.PWD.substr(2) + "/" + defaultPhotoName // TESTING that file is saving
                     newPath = "/photos/" + defaultPhotoName
-                    // console.log("(SHOULD BE NEW NAME): " + defaultPhotoName)
                     console.log("newPath: " + newPath)
 
                     var newPhoto = new Photo();
                     newPhoto.url = newPath;
                     newPhoto.originalPhotoName = originalPhotoName
+                    // TODO: Add only userID
                     newPhoto.creator = xUser;
                     newPhoto.createdAt = Date.now();
                     newPhoto.editedAt = Date.now();
                     console.log(newPhoto)
 
                     photoObjects.push(newPhoto)
-
-                    // fs.copyFile(defaultPath, newPhoto.url, (err) => {
-                    //     if (err) throw err;
-                    //     // fs.unlinkSync(defaultPath)
-                    // });
                 }
 
-                // TEST THIS. SSH failed before testing
-                // Files or directory weren't being found
                 for (i = 0; i < photoObjects.length; i++) {
                     fs.copyFile(defaultPaths[i], photoObjects[i].url, (err) => {
                         if (err) throw err;
-                        // fs.unlinkSync(defaultPath)
                     });
                 }
 
@@ -109,7 +86,6 @@ function photos(req, res, next) {
                     Photo.findOne({originalPhotoName: photoObj.originalPhotoName}).then(function(photo) {
                         if (!photo) {
                             photoObj.save().then(function(savedPhoto) {
-                                photoObjects.push(savedPhoto)
                                 console.log("Saved photo: " + savedPhoto)
                                 savedPhotos.push(savedPhoto)
                                 // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
@@ -127,8 +103,8 @@ function photos(req, res, next) {
                     if (err) {
                         res.send("ERR IN ASYNC: " + err.message);
                     }
+                    res.json(savedPhotos)
                 });
-                res.json(savedPhotos)
             });
             break;
         default:
@@ -136,7 +112,8 @@ function photos(req, res, next) {
     }
 }
 
-
+// /photos/:photoID
+// photos/:photoID/:tagID
 function specificPhoto(req, res, next) {
     let xUser = getUser(req);
     let photoID = req.params.photoID;
@@ -144,37 +121,65 @@ function specificPhoto(req, res, next) {
     // let xUserID = JSON.parse(xUser).id
 
     switch (req.method) {
+        // TODO: TEST!
         case "GET":
-            Photo.findOne({_id: photoID}).then(function(photo) {
+            Photo.findOne({ _id: photoID}).then(function(photo) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
-                } else {
-                    // Check if user is shared on the tag via for loop
-                    // for each tag in photo.tagIDs...
-                    // if (!tag.members.includes(xUserID)) {
-                    //     res.status(403).send("You are not a registered viewer of any tags on this photo.");
-                    // } else {
-                        photoURL = photo.url
-                        readStream = fs.createReadStream(photoURL);
-                        // We replaced all the event handlers with a simple call to readStream.pipe()
-                        res.status(200)
-                        readStream.pipe(res);
-                    //}
                 }
+                if (photo.creator != xUser) {
+                    console.log("User is NOT creator; checking tags now")
+                    for (i = 0; i < photo.tags.length; i++) {
+                        tag = photo.tags[i]
+                        if (tag.members.includes(xUser)) {
+                            // res.status(200).send(photo)
+                            readStream = fs.createReadStream(photo.url);
+                            res.status(200)
+                            readStream.pipe(res);
+                        }
+                    }
+                } else {
+                    // res.status(200).send(photo)
+                    readStream = fs.createReadStream(photo.url);
+                    res.status(200)
+                    readStream.pipe(res);
+                }
+                res.status(403).send("You cannot view this photo")
             });
             break;
-        // Changed from POST to PATCH?
-        case "PATCH":
+        
+        // Change from POST to PATCH?
+        // TODO: TEST
+        case "POST":
             Photo.findOne({_id: photoID}).then(function(photo) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
+                }
+                if (tagID.length == 0) {
+                    updatedLikes = []
+                    if (photo.likes.includes(xUser)) {
+                        i = photo.likes.indexOf(xUser)
+                        updatedLikes = photo.likes.splice(i, 1)
+                    } else {
+                        updatedLikes = photo.likes.push(xUser)
+                    }
+                    
+                    Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), likes: updatedLikes}, {new: true}, (err, updatedPhoto) => {
+                        if (err) {
+                            res.send("Error: Couldn't update (like/unlike) photo: " + err);
+                        } else {
+                            // channelToSend = createChannelEvent(CHANNEL_UPDATE, channel, false);
+                            // sendToQueue(channelToSend);
+                            res.json(updatedPhoto);
+                        }
+                    });
                 } else {
-                    // if (channel.privateChannel && !channel.members.includes(xUserID)) {
-                    //     res.status(403).send("You are not a member of this private channel.");
-                    // } else {
+                    if (photo.creator != xUser) {
+                        res.status(403).send("You are not the creator of this photo.");
+                    } else {
                         Tag.findOne({_id: tagID}).then(function(tag) {
-                            // console.log("Add tag to photo: " + tag)
-                            updatedTags = photo.tags.push(tag)
+                            console.log("Add tag to photo: " + tag)
+                            updatedTags = photo.tags.push(tag.name)
 
                             Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), tags: updatedTags}, {new: true}, (err, updatedPhoto) => {
                                 if (err) {
@@ -185,21 +190,10 @@ function specificPhoto(req, res, next) {
                                     res.json(updatedPhoto);
                                 }
                             });
-            
-                            // newMessage.save().then(function(message) {
-                            //     console.log("/////////////////////////////")
-                            //     console.log("Saving message in mongodb and sending to RabbitMQ queue")
-
-                            //     eventToSend = createMessageEvent(MESSAGE_NEW, message, channel, false);
-                            //     sendToQueue(eventToSend);
-                                
-                            //     console.log("/////////////////////////////")
-                            //     res.status(201).json(message)
-                            // });
-
                         }).catch(next);
-                    // }
+                    }
                 }
+                
             });
             break;
             
@@ -207,42 +201,50 @@ function specificPhoto(req, res, next) {
             Photo.findOne({_id: photoID}).then(function(photo) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
-                } else {
-                    // if (photo.creator != xUser) {
-                    //     res.status(403).send("You are not the creator of this photo.");
-                    // } else {
+                }
+                if (photo.creator != xUser) {
+                    res.status(403).send("You are not the creator of this photo.");
+                }
+                if (tagID.length == 0) {
                     Photo.deleteOne({_id: photoID}, function(err) {
                         if (err) {
                             res.send("Error: Could not delete photo: " + err)
                         }
-                        res.send("Deleted photo")
-                        // eventToSend = createChannelEvent(CHANNEL_DELETE, channel, true)
-                        // sendToQueue(eventToSend);
+                        res.status(200).send("Deleted photo")
+                    }).catch(next);
+                } else {
+                    Photo.findOneAndUpdate({_id: photoID}, { $pull: {"tags": tagID}, editedAt: Date.now()}, {returnNewDocument: true}, (err, updatedPhoto) => {
+                        if (err) {
+                            res.send("Error: Couldn't remove tag from photo: " + err)
+                        }
+                        res.status(200).send(updatedPhoto)
                     }).catch(next);
                 }
             }).catch(next);
             break;
+
         default:
             res.send("Method not allowed")
     }
 }
 
+// /tags
 function tags(req, res, next) {
     switch (req.method) {
         case "GET":
-            Tag.find({}, function(err, tags) {
+            Tag.find({ $or: [{members: xUserID}, {creator: xUserID}] }, function(err, tags) {
+                if (err) { 
+                    res.send("Error getting tags: " + err)
+                }
                 res.status(200).json(tags);
             }).catch(next);
-            // Photo.find({ $or: [{privateChannel: false}, {privateChannel: true, members: xUserID}] }, function (err, channels) {
-            //     res.json(channels);
-            // }).catch(next);
             break;
         case "POST":
             var form = new multiparty.Form();
 
             form.parse(req, function(err, fields, files) {
                 if (err) {
-                    console.log("ERROR IN FORM.PARSE")
+                    console.log("ERROR IN TAGS FORM.PARSE")
                     return;
                 }
 
@@ -252,6 +254,8 @@ function tags(req, res, next) {
                 
                 var newTag = new Tag();
                 newTag.name = fields.name
+
+                // TODO: Revisit here to add members!!!
                 newTag.members = fields.members
                 newTag.creator = xUser;
                 newTag.createdAt = Date.now();
@@ -267,6 +271,7 @@ function tags(req, res, next) {
     }
 }
 
+// /tags/:tagID
 function specificTag(req, res, next) {
     tagID = req.params.tagID;
 
@@ -289,15 +294,25 @@ function specificTag(req, res, next) {
                 if (!tag) {
                     res.send("Tag doesn't exist!");
                 } else {
-                    // Photo.find({tags: tagID}, function (err, photos) {
+                    Tag.deleteOne({_id: tagID}, function(err) {
+                        if (err) {
+                            res.send("Error: Could not delete photo: " + err)
+                        }
+                        Photo.updateMany({tags: tagID}, { $pull: {tags: tagID}})
+                        res.status(200).send("Deleted tag")
+                        // eventToSend = createChannelEvent(CHANNEL_DELETE, channel, true)
+                        // sendToQueue(eventToSend);
+                    }).catch(next);
+
+                    // Tag.find({tags: tagID}, function (err, tags) {
                         //{editedAt: Date.now(), tags: updatedTags}
                         // or tag._id
                         // {new: true},
                         // no need array filters?
-                        Photo.updateMany({tags: tagID}, { $pull: {tags: tagID}})
+                        // Photo.updateMany({tags: tagID}, { $pull: {tags: tagID}})
                     //  }).catch(next);
                     /*
-                    updatedTags = photo.tags.push(tag)
+                    updatedTags = photo.tags.push(tag) // change this to delete
 
                     Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), tags: updatedTags}, {new: true}, (err, updatedPhoto) => {
                         if (err) {
@@ -324,7 +339,8 @@ function specificTag(req, res, next) {
     }
 }
 
-function specificTagUser(req, res, next) {
+// /tags/:tagID/:userID
+function specificTagMembers(req, res, next) {
     tagID = req.params.tagID;
     userID = req.params.userID;
 
@@ -350,7 +366,7 @@ function specificTagUser(req, res, next) {
         case "DELETE":
             Tag.findOneAndUpdate({_id: tagID}, { $pull: {"members": userID}, editedAt: Date.now()}, {returnNewDocument: true}, (err, tag) => {
                 if (err) {
-                    res.send("Error: Couldn't deleete from members: " + err)
+                    res.send("Error: Couldn't delete from members: " + err)
                 }
                 res.status(201).send("User was removed as member from tag")
             }).catch(next);
@@ -365,4 +381,4 @@ exports.photos = photos
 exports.specificPhoto = specificPhoto
 exports.tags = tags
 exports.specificTag = specificTag
-exports.specificTagUser = specificTagUser
+exports.specificTagMembers = specificTagMembers

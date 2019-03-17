@@ -2,7 +2,6 @@ const express = require("express");
 // const morgan = require("morgan");
 var mongoose = require("mongoose");
 var modules = require("./modules.js");
-// var Channel = require("./channel.js"); // Used to put general channel
 var photosRouter = require("./photosRouter.js");
 var tagsRouter = require("./tagsRouter.js");
 // var amqp = require('amqplib/callback_api'); // RabbitMQ
@@ -17,7 +16,6 @@ const [host, port] = addr.split(":");
 app.use(express.json());
 // app.use(morgan("dev"));
 
-// /*
 var mongoURL = process.env.MONGO_URL || 'mongodb://mongocontainer:27017/mongoDB';
 // var mongoURL = 'mongodb://localhost:27017/mongoDB'; // not working
 
@@ -28,8 +26,8 @@ mongoose.connect(mongoURL, function (err, db) {
         console.log ('Succeeded connected to: ' + mongoURL);     
     }
 }).catch(error => {console.log('Error connecting to db: ', error.message); });
-// */
 
+// TODO: WEBSOCKETS
 /*
 var rabbitURL = 'amqp://rabbitcontainer:5672'
 amqp.connect(rabbitURL, function(err, conn) {
@@ -63,6 +61,8 @@ app.use("/", function(req, res, next) {
         next();
     // }
 });
+
+
 
 app.use("/photos", photosRouter);
 // app.use("/tags", tagsRouter);
