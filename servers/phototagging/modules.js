@@ -229,6 +229,8 @@ function specificPhoto(req, res, next) {
                         }
                     });
                 } else {
+                    // SHOULDN'T CONTINUE IF PHOTO CREATOR != TAG CREATOR
+                    console.log("CREATOR of photo: " + xUser)
                     if (photo.creator != xUser) {
                         res.status(403).send("You are not the creator of this photo.");
                     }
@@ -303,8 +305,9 @@ function tags(req, res, next) {
             Tag.find({ $or: [{members: xUser}, {creator: xUser}] }, function(err, tags) {
                 if (err) { 
                     res.send("Error getting tags: " + err)
+                } else {
+                    res.status(200).json(tags);
                 }
-                res.status(200).json(tags);
             }).catch(next);
             break;
         case "POST":
@@ -366,19 +369,20 @@ function specificTag(req, res, next) {
             Tag.findOne({_id: tagID}).then(function(tag) {
                 if (!tag) {
                     res.send("Tag doesn't exist!");
-                }
-                if (tag.creator != xUser) {
+                } else if (tag.creator != xUser) {
                     res.send("You are not the creator of this tag!")
+                } else {
+                    Tag.deleteOne({_id: tagID}, function(err) {
+                        if (err) {
+                            res.send("Error: Could not delete tag: " + err)
+                        } else {
+                            Photo.updateMany({tags: tagID}, { $pull: {tags: tagID}})
+                            res.status(200).send("Deleted tag")
+                            // eventToSend = createChannelEvent(CHANNEL_DELETE, channel, true)
+                            // sendToQueue(eventToSend);
+                        }
+                    }).catch(next);
                 }
-                Tag.deleteOne({_id: tagID}, function(err) {
-                    if (err) {
-                        res.send("Error: Could not delete tag: " + err)
-                    }
-                    Photo.updateMany({tags: tagID}, { $pull: {tags: tagID}})
-                    res.status(200).send("Deleted tag")
-                    // eventToSend = createChannelEvent(CHANNEL_DELETE, channel, true)
-                    // sendToQueue(eventToSend);
-                }).catch(next);
 
                 // Tag.find({tags: tagID}, function (err, tags) {
                     //{editedAt: Date.now(), tags: updatedTags}
