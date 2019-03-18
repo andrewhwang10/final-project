@@ -3,15 +3,15 @@ const SIGNUP_FORM = $("#signupForm");
 
 var params = {
     method: "POST",
-    mode: 'cors'//,
-    // headers:{ // Error when go run main.go (req. headers); Without it in docker, error (405 and not 200)
-    //     'Access-Control-Allow-Origin': '*'
-    //     //'Access-Control-Allow-Methods': 'GET, PUT, POST, PATCH, DELETE'
-    // }
+    mode: 'cors',
+    headers: { // Error when go run main.go (req. headers); Without it in docker, error (405 and not 200)
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, PUT, POST, PATCH, DELETE'
+    }
 }
 
-LOGIN_FORM.addEventListener("submit", login);
-SIGNUP_FORM.addEventListener("submit", signUp);
+LOGIN_FORM.submit(login);
+SIGNUP_FORM.submit(signUp);
 
 
 function login(e) {
