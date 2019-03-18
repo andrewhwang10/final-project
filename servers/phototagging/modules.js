@@ -6,22 +6,25 @@ var path = require('path');
 // var async = require('async');
 
 
-function getUser(req) {
+function getUserID(req, res) {
     let user = req.get("X-User");
-    return user;
+    if (!user) {
+        res.status(403).send("User is not authenticated")
+        return
+    }
+    console.log(user)
+    let userID = String(JSON.parse(user).id)
+    return userID;
 }
 
 function photos(req, res, next) {
-    // TODO: Return error if X-User header doesn't exist
-    let xUser = getUser(req);
-    console.log("X-User: " + xUser)
-    // let xUserID = JSON.parse(xUser).id
+    let xUserID = getUserID(req, res);
+    console.log("X-UserID: " + xUserID)
 
     // TODO: Send multiple photos in one response
     switch (req.method) {
         case "GET":
-            // TODO: Only show images that user can see (shared tag or creator)
-            Photo.find( { $or: [{'tags.members': xUser }, {creator: xUser}] }).then(function(photos) {
+            Photo.find( { $or: [{'tags.members': xUserID }, {creator: xUserID}] }).then(function(photos) {
                 res.status(200).json(photos)
             }).catch(next);
             break;
@@ -31,11 +34,11 @@ function photos(req, res, next) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
                 }
-                if (photo.creator != xUser) {
+                if (photo.creator != xUserID) {
                     console.log("User is NOT creator; checking tags now")
                     for (i = 0; i < photo.tags.length; i++) {
                         tag = photo.tags[i]
-                        if (tag.members.includes(xUser)) {
+                        if (tag.members.includes(xUserID)) {
                             // res.status(200).send(photo)
                             readStream = fs.createReadStream(photo.url);
                             res.status(200)
@@ -67,7 +70,7 @@ function photos(req, res, next) {
                 }
                 console.log(fields.type)
                 console.log(files.uploadFile + "length: " + files.uploadFile.length)
-                console.log(xUser)
+                console.log(xUserID)
 
                 formFields = fields
                 formFiles = files.uploadFile
@@ -95,7 +98,7 @@ function photos(req, res, next) {
                     newPhoto.url = newPath;
                     newPhoto.originalPhotoName = originalPhotoName
                     // TODO: Add only userID
-                    newPhoto.creator = xUser;
+                    newPhoto.creator = xUserID;
                     newPhoto.createdAt = Date.now();
                     newPhoto.editedAt = Date.now();
                     console.log(newPhoto)
@@ -148,7 +151,7 @@ function photos(req, res, next) {
 
 // CHeck if user is creator of tag or member of it
 function photosByTag(req, res, next) {
-    let xUser = getUser(req);
+    let xUserID = getUserID(req, res);
     let tagID = req.params.tagID;
 
     switch (req.method) {
@@ -157,7 +160,7 @@ function photosByTag(req, res, next) {
                 if (!tag) {
                     res.send("Tag doesn't exist");
                 }
-                Photo.find({ $or: [{'tags.members': xUser }, {creator: xUser}], tags: tag }).then(function(photos) {
+                Photo.find({ $or: [{'tags.members': xUserID }, {creator: xUserID}], tags: tag }).then(function(photos) {
                     res.status(200).json(photos);
                 }).catch(next);
             }).catch(next);
@@ -170,10 +173,9 @@ function photosByTag(req, res, next) {
 // /photos/:photoID
 // /photos/:photoID/:tagID
 function specificPhoto(req, res, next) {
-    let xUser = getUser(req);
+    let xUserID = getUserID(req, res);
     let photoID = req.params.photoID;
     let tagID = req.params.tagID;
-    // let xUserID = JSON.parse(xUser).id
 
     switch (req.method) {
         // TODO: TEST!
@@ -182,11 +184,11 @@ function specificPhoto(req, res, next) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
                 }
-                if (photo.creator != xUser) {
+                if (photo.creator != xUserID) {
                     console.log("User is NOT creator; checking tags now")
                     for (i = 0; i < photo.tags.length; i++) {
                         tag = photo.tags[i]
-                        if (tag.members.includes(xUser)) {
+                        if (tag.members.includes(xUserID)) {
                             // res.status(200).send(photo)
                             readStream = fs.createReadStream(photo.url);
                             res.status(200)
@@ -212,11 +214,11 @@ function specificPhoto(req, res, next) {
                 }
                 if (tagID.length == 0) {
                     updatedLikes = []
-                    if (photo.likes.includes(xUser)) {
-                        i = photo.likes.indexOf(xUser)
+                    if (photo.likes.includes(xUserID)) {
+                        i = photo.likes.indexOf(xUserID)
                         updatedLikes = photo.likes.splice(i, 1)
                     } else {
-                        updatedLikes = photo.likes.push(xUser)
+                        updatedLikes = photo.likes.push(xUserID)
                     }
                     
                     Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), likes: updatedLikes}, {new: true}, (err, updatedPhoto) => {
@@ -229,14 +231,14 @@ function specificPhoto(req, res, next) {
                         }
                     });
                 } else {
-                    // SHOULDN'T CONTINUE IF PHOTO CREATOR != TAG CREATOR
-                    console.log("CREATOR of photo: " + xUser)
-                    if (photo.creator != xUser) {
+                    console.log("CREATOR of photo: " + xUserID)
+                    if (photo.creator != xUserID) {
                         res.status(403).send("You are not the creator of this photo.");
                     }
 
                     Tag.findOne({_id: tagID}).then(function(tag) {
-                        if (tag.creator != xUser) {
+                        // SHOULDN'T CONTINUE IF PHOTO CREATOR != TAG CREATOR
+                        if (tag.creator != xUserID) {
                             res.status(403).send("You are not the creator of this tag.");
                         }
                         console.log("Add tag to photo: " + tag)
@@ -271,7 +273,7 @@ function specificPhoto(req, res, next) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
                 }
-                if (photo.creator != xUser) {
+                if (photo.creator != xUserID) {
                     res.status(403).send("You are not the creator of this photo.");
                 }
                 if (tagID.length == 0) {
@@ -299,10 +301,10 @@ function specificPhoto(req, res, next) {
 
 // /tags
 function tags(req, res, next) {
-    let xUser = getUser(req);
+    let xUserID = getUserID(req, res);
     switch (req.method) {
         case "GET":
-            Tag.find({ $or: [{members: xUser}, {creator: xUser}] }, function(err, tags) {
+            Tag.find({ $or: [{members: xUserID}, {creator: xUserID}] }, function(err, tags) {
                 if (err) { 
                     res.send("Error getting tags: " + err)
                 } else {
@@ -331,7 +333,7 @@ function tags(req, res, next) {
 
                 // TODO: Revisit here to add members!!! Need to be comma separated
                 newTag.members = mem
-                newTag.creator = xUser;
+                newTag.creator = xUserID;
                 newTag.createdAt = Date.now();
                 newTag.editedAt = Date.now();
 
@@ -348,7 +350,7 @@ function tags(req, res, next) {
 // /tags/:tagID
 // TODO: TEST Deleting and then getting tags
 function specificTag(req, res, next) {
-    xUser = getUser(req)
+    xUserID = getUserID(req, res)
     tagID = req.params.tagID;
 
     switch (req.method) {
@@ -369,7 +371,7 @@ function specificTag(req, res, next) {
             Tag.findOne({_id: tagID}).then(function(tag) {
                 if (!tag) {
                     res.send("Tag doesn't exist!");
-                } else if (tag.creator != xUser) {
+                } else if (tag.creator != xUserID) {
                     res.send("You are not the creator of this tag!")
                 } else {
                     Tag.deleteOne({_id: tagID}, function(err) {

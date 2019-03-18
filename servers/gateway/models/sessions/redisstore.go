@@ -48,18 +48,24 @@ func (rs *RedisStore) Get(sid SessionID, sessionState interface{}) error {
 	//unmarshal it back into the `sessionState` parameter
 	//and reset the expiry time, so that it doesn't get deleted until
 	//the SessionDuration has elapsed.
+	pipe := rs.Client.Pipeline()
+	state := pipe.Get(sid.getRedisKey())
+	boolCmd := pipe.Expire(sid.getRedisKey(), rs.SessionDuration)
 
-	//for extra-credit using the Pipeline feature of the redis
-	//package to do both the get and the reset of the expiry time
-	//in just one network round trip!
-	j, err := rs.Client.Get(sid.getRedisKey()).Result()
-	if err == redis.Nil {
+	pipe.Exec()
+
+	if state.Err() != nil {
 		return ErrStateNotFound
-	} else if err != nil {
-		return err
 	}
-	rs.Client.Set(sid.getRedisKey(), j, 0)
-	return json.Unmarshal([]byte(j), sessionState)
+	stateBytes, errState := state.Bytes()
+	if errState == redis.Nil {
+		return ErrStateNotFound
+	}
+	if boolCmd.Err() != nil {
+		return ErrStateNotFound
+	}
+	json.Unmarshal(stateBytes, sessionState)
+	return nil
 }
 
 //Delete deletes all state data associated with the SessionID from the store.

@@ -1,1 +1,1 @@
-docker build -t knasu13/phototagging .
+docker build -t knasu13/tag .

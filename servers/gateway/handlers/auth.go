@@ -13,8 +13,8 @@ import (
 
 //SessionState represents a session that is started by an authenticated user
 type SessionState struct {
-	StartTime time.Time  `json:"startTime,omitempty"`
-	User      users.User `json:"user,omitempty"`
+	StartTime time.Time   `json:"startTime,omitempty"`
+	User      *users.User `json:"user,omitempty"`
 }
 
 func (ctx *HandlerContext) UsersHandler(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +44,10 @@ func (ctx *HandlerContext) UsersHandler(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
-		session := &SessionState{}
+		session := &SessionState{
+			StartTime: time.Now(),
+			User:      user,
+		}
 		_, err = sessions.BeginSession(ctx.SigningKey, ctx.SessionStore, session, w)
 		if err != nil {
 			http.Error(w, "Error creating session in server.", http.StatusInternalServerError)
@@ -101,7 +104,10 @@ func (ctx *HandlerContext) SessionsHandler(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "invalid credentials, password is not correct", http.StatusUnauthorized)
 		return
 	}
-	sessState := &SessionState{}
+	sessState := SessionState{
+		StartTime: time.Now(),
+		User:      user,
+	}
 	_, err = sessions.BeginSession(ctx.SigningKey, ctx.SessionStore, sessState, w)
 	if err != nil {
 		http.Error(w, "error starting new session", http.StatusInternalServerError)

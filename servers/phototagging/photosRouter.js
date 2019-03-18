@@ -2,7 +2,6 @@ var express = require('express');
 var modules = require("./modules.js");
 var photosRouter = express.Router();
 
-
 // Adding tag
 photosRouter.post("/:photoID/:tagID", modules.specificPhoto);
 // Remove tag
@@ -18,6 +17,7 @@ photosRouter.post("/:photoID", modules.specificPhoto);
 // Delete photo
 photosRouter.delete("/:photoID", modules.specificPhoto);
 
+// photosRouter.use("/", express.static('photos'))
 photosRouter.get("/", modules.photos);
 photosRouter.post("/", modules.photos);
 

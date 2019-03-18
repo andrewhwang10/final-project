@@ -1,19 +1,17 @@
 docker volume prune -f 
 
-docker network rm privNet
-docker network create privNet
-
 docker rm -f gatewaycontainer
 docker rm -f userscontainer
 docker rm -f sessionscontainer
 docker rm -f phototaggingcontainer
 docker rm -f mongocontainer
 
+docker network rm privNet
+docker network create privNet
+
 docker pull knasu13/taggateway
 docker pull knasu13/tagusers
 docker pull knasu13/tag
-
-docker network create privNet
 
 export TLSCERT=/etc/letsencrypt/live/tag.karinasu.me/fullchain.pem
 export TLSKEY=/etc/letsencrypt/live/tag.karinasu.me/privkey.pem
@@ -32,6 +30,8 @@ docker run -d \
 --name mongocontainer \
 mongo
 
+sleep 5
+
 docker run -d \
 -v ~/photos:/photos \
 --network privNet \
@@ -45,7 +45,7 @@ docker run -d \
 -e MYSQL_DATABASE=userDB \
 knasu13/tagusers
 
-sleep 25
+sleep 20
 
 docker run -d \
 --name sessionscontainer \
@@ -59,6 +59,7 @@ redis
 # rabbitmq:3-management
 
 # Double-check why mount letsencrypt...
+# Mount EC2's photos directory?
 docker run -d \
 --network privNet \
 --name gatewaycontainer \
@@ -69,6 +70,6 @@ docker run -d \
 -e REDISADDR=$REDISADDR \
 -e DSN=$DSN \
 -e SESSIONKEY=$SESSIONKEY \
--e PHOTOTAGGINGADDR=$PHOTOSADDR \
+-e PHOTOSADDR=$PHOTOSADDR \
 -v /etc/letsencrypt/:/etc/letsencrypt/:ro \
 knasu13/taggateway

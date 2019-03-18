@@ -51,7 +51,12 @@ func GetSessionID(r *http.Request, signingKey string) (SessionID, error) {
 		return InvalidSessionID, ErrInvalidScheme
 	}
 	sid = strings.TrimPrefix(sid, schemeBearer)
-	return ValidateID(sid, signingKey)
+	// return ValidateID(sid, signingKey)
+	sidValid, err := ValidateID(sid, signingKey)
+	if err != nil {
+		return InvalidSessionID, err
+	}
+	return sidValid, nil
 }
 
 //GetState extracts the SessionID from the request,
@@ -64,9 +69,12 @@ func GetState(r *http.Request, signingKey string, store Store, sessionState inte
 	if err != nil {
 		return InvalidSessionID, ErrNoSessionID
 	}
-	id := strings.TrimPrefix(sid.String(), schemeBearer)
-	err = store.Get(SessionID(id), sessionState)
-	return SessionID(sid), err
+
+	errGet := store.Get(sid, sessionState)
+	if errGet != nil {
+		return InvalidSessionID, ErrStateNotFound
+	}
+	return sid, nil
 }
 
 //EndSession extracts the SessionID from the request,

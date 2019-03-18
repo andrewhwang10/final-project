@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"final-project/servers/gateway/models/sessions"
 	"final-project/servers/gateway/models/users"
+	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -15,19 +16,25 @@ type HandlerContext struct {
 	UserStore    users.Store    `json:"userStore,omitempty"`
 }
 
-func (ctx *HandlerContext) CustomDirector(targ *url.URL) func(*http.Request) {
+type Director func(r *http.Request)
+
+func (ctx *HandlerContext) CustomDirector(targ *url.URL) Director {
+	fmt.Printf("INSIDE CUSTOM DIRECTOR\n")
 	return func(r *http.Request) {
-		sessState := SessionState{}
-		_, err := sessions.GetState(r, ctx.SigningKey, ctx.SessionStore, sessState)
-		if err == nil {
-			obj, err := json.Marshal(sessState.User)
-			if err == nil {
-				r.Header.Del("X-User")
-				r.Header.Add("X-User", string(obj))
-			}
-		}
 		r.Host = targ.Host
 		r.URL.Host = targ.Host
 		r.URL.Scheme = targ.Scheme
+
+		sessState := &SessionState{}
+		_, errState := sessions.GetState(r, ctx.SigningKey, ctx.SessionStore, sessState)
+		if errState != nil {
+			fmt.Printf("error in getState: %v\n", errState)
+			r.Header.Del("X-User")
+			return
+		}
+		authUser := sessState.User
+		authUserByte, _ := json.Marshal(authUser)
+
+		r.Header.Add("X-User", string(authUserByte))
 	}
 }

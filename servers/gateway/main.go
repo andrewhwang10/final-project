@@ -68,6 +68,7 @@ func main() {
 	}
 
 	photosURL, errParse := url.Parse(fmt.Sprintf("http://%s", photosAddr))
+	fmt.Printf("photosURL: %v\n", photosURL)
 	if errParse != nil {
 		fmt.Printf("Error parsing photosURL: %v\n", errParse)
 	}
