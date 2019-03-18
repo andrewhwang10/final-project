@@ -3,7 +3,7 @@ const SIGNUP_FORM = document.getElementById("signupForm");
 
 var params = {
     method: "POST",
-    mode: 'cors',
+   // mode: 'cors',
     headers: { // Error when go run main.go (req. headers); Without it in docker, error (405 and not 200)
         //'Access-Control-Allow-Origin': '*',
         //'Access-Control-Allow-Methods': 'GET, PUT, POST, PATCH, DELETE'
@@ -33,6 +33,7 @@ function login(e) {
     })
     .then(r => {
         console.log("Success: ", r); // File param is empty
+        window.location.replace("index.html");
     })
     .catch(function(err) {
         console.log(err)
@@ -52,13 +53,13 @@ function signUp(e) {
         if (!response.ok) {
             throw new Error('HTTP error, status = ' + response.status);
         }
-        console.log(response);
         sid = response.headers.get(headerAuthorization);
         sessionStorage.setItem('sessionID', sid);
         return response.json()
     })
     .then(r => {
         console.log("Success: ", r); // File param is empty
+        window.location.replace("index.html");
     })
     .catch(function(err) {
         console.log(err)

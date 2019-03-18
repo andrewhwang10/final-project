@@ -1,16 +1,14 @@
 const PHOTOS_UPLOADED = document.querySelector("#photosUploaded")
 const PHOTOS_FLEX = PHOTOS_UPLOADED.querySelector("#photosFlex")
-const TAG_FORM = /** @type {HTMLInputElement} */(document.querySelector("#tagForm"));
-const PHOTO_FORM = /** @type {HTMLInputElement} */(document.querySelector("#photoForm"));
+const TAG_FORM = document.querySelector("#tagForm");
+const PHOTO_FORM = document.querySelector("#photoForm");
 
 var params = {
     method: "POST",
-    mode: 'cors'//,
-    // headers:{ // Error when go run main.go (req. headers); Without it in docker, error (405 and not 200)
-    //     'Access-Control-Allow-Origin': '*'
-    //     //'Access-Control-Allow-Methods': 'GET, PUT, POST, PATCH, DELETE'
-    // }
+    mode: 'cors'
 }
+
+window.onload = getPhotos();
 
 TAG_FORM.addEventListener("submit", onSubmit)
 PHOTO_FORM.addEventListener("submit", onSubmit);
@@ -43,6 +41,7 @@ function uploadPhoto() {
     console.log("In uploadPhoto");
     var formData = new FormData(PHOTO_FORM);
     params.body = formData;
+    params.headers = {};
     params.headers["Authorization"] = sessionStorage.getItem('sessionID');
 
     fetch(BASE_URI + "/photos", params)
@@ -102,10 +101,37 @@ function renderPhotos(r) {
         // image.src = "C:\\Users\\knasu\\go\\src\\final-project\\photos\\c189a873fb8cae1060638ea6.png"
         // Use URL to test appending to HTML
         image = document.createElement("img")
-        image.src = "https://cdn0.tnwcdn.com/wp-content/blogs.dir/1/files/2018/02/google-pacman-796x419.jpg"
+        image.src = "data:image/png;base64," + r[i].body;
         image.classList.add("img-thumbnail")
         
         imageDiv.appendChild(image)
         PHOTOS_FLEX.appendChild(imageDiv)
     }
+}
+
+function getPhotos() {
+    console.log(sessionStorage.getItem("sessionID"));   
+    var headers = {
+        Authorization: sessionStorage.getItem("sessionID")
+    }
+    var params = {
+        method: "GET",
+        mode: "cors",
+        headers: headers
+    }
+    fetch(BASE_URI + "/photos", params)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP error, status = ' + response.status);
+        }
+        return response.json()
+    })
+    .then(r => {
+        console.log("Success: ", r); // File param is empty
+        renderPhotos(r);
+    })
+    .catch(function(err) {
+        console.log(err)
+    });
+
 }
