@@ -4,5 +4,5 @@
 FROM alpine
 COPY gateway /gateway
 # RUN apk add ca-certificates
-# EXPOSE 443
+EXPOSE 443
 ENTRYPOINT ["/gateway"]
