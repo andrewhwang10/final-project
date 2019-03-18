@@ -11,7 +11,6 @@ var params = {
     //     //'Access-Control-Allow-Methods': 'GET, PUT, POST, PATCH, DELETE'
     // }
 }
-const BASE_URI = "https://tag.karinasu.me"
 
 TAG_FORM.addEventListener("submit", onSubmit)
 PHOTO_FORM.addEventListener("submit", onSubmit);

@@ -1,5 +1,5 @@
-const LOGIN_FORM = /** @type {HTMLInputElement} */(document.querySelector("#loginForm"));
-const SIGNUP_FORM = /** @type {HTMLInputElement} */(document.querySelector("#signupForm"));
+const LOGIN_FORM = $("#loginForm");
+const SIGNUP_FORM = $("#signupForm");
 
 var params = {
     method: "POST",
