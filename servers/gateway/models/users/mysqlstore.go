@@ -2,12 +2,10 @@ package users
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
-	"strings"
 
 	_ "github.com/go-sql-driver/mysql" //mysql driver
-	"github.com/info441/assignments-andrewhwang10/servers/gateway/indexes"
+	// "github.com/info441/assignments-andrewhwang10/servers/gateway/indexes"
 )
 
 //MySQLStore represents a users.Store backed by MySQL.
@@ -100,6 +98,7 @@ func (mss *MySQLStore) Delete(id int64) error {
 	return nil
 }
 
+/*
 //LoadUsers loads existing users in to trie
 func (mss *MySQLStore) LoadUsers(t *indexes.Trie) error {
 	rows, err := mss.Client.Query("select id, user_name, first_name, last_name, from users")
@@ -122,3 +121,4 @@ func (mss *MySQLStore) LoadUsers(t *indexes.Trie) error {
 	}
 	return nil
 }
+*/

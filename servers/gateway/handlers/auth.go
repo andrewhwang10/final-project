@@ -2,14 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"final-project/servers/gateway/models/sessions"
+	"final-project/servers/gateway/models/users"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/info441/final-project/servers/gateway/models/sessions"
-	"github.com/info441/final-project/servers/gateway/models/users"
 )
 
 //SessionState represents a session that is started by an authenticated user

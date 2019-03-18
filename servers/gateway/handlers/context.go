@@ -2,11 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"final-project/servers/gateway/models/sessions"
+	"final-project/servers/gateway/models/users"
 	"net/http"
 	"net/url"
-
-	"github.com/info441/final-project/servers/gateway/models/sessions"
-	"github.com/info441/final-project/servers/gateway/models/users"
 )
 
 //HandlerContext represents a receiver for handlers to utilize and gain context

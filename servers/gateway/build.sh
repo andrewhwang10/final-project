@@ -1,3 +1,4 @@
-# GOOS=linux go build
-# docker build -t ...
-# go clean
+GOOS=linux go build
+docker build -t knasu13/taggateway .
+docker build -t knasu13/tagusers ../db
+go clean

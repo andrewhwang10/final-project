@@ -4,16 +4,18 @@ package main
 
 import (
 	"database/sql"
+	"final-project/servers/gateway/handlers"
+	"final-project/servers/gateway/models/sessions"
+	"final-project/servers/gateway/models/users"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/info441/final-project/servers/gateway/handlers"
-	"github.com/info441/final-project/servers/gateway/models/sessions"
-	"github.com/info441/final-project/servers/gateway/models/users"
 )
 
 func failOnError(err error, msg string) {
@@ -33,19 +35,20 @@ func getEnvironmentVariable(key string) string {
 func main() {
 	// Retrieve and store environment variables
 	addr := getEnvironmentVariable("ADDR")
-	photosaddr := getEnvironmentVariable("PHOTOSADDR")
-	tlscert := getEnvironmentVariable("TLSCERT")
-	tlskey := getEnvironmentVariable("TLSKEY")
-	sessionkey := getEnvironmentVariable("SESSIONKEY")
-	redisaddr := getEnvironmentVariable("REDISADDR")
+	photosAddr := getEnvironmentVariable("PHOTOSADDR")
+	tlsCert := getEnvironmentVariable("TLSCERT")
+	tlsKey := getEnvironmentVariable("TLSKEY")
+	sessionKey := getEnvironmentVariable("SESSIONKEY")
+	redisAddr := getEnvironmentVariable("REDISADDR")
 	dsn := getEnvironmentVariable("DSN")
 
 	// Redis Server
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     redisaddr,
-		Password: "",
-		DB:       0,
+		Addr: redisAddr,
+		// Password: "",
+		// DB:       0,
 	})
+
 	_, err := rdb.Ping().Result()
 	failOnError(err, "Error pinging redis database")
 	rs := sessions.NewRedisStore(rdb, 150*time.Second)
@@ -59,24 +62,27 @@ func main() {
 	ms := users.NewMySQLStore(db)
 
 	hc := handlers.HandlerContext{
-		SigningKey:   sessionkey,
+		SigningKey:   sessionKey,
 		SessionStore: rs,
 		UserStore:    ms,
 	}
 
-	photosProxy := &httputil.ReverseProxy{Director: hc.CustomDirector(photosaddr)}
+	photosURL, errParse := url.Parse(fmt.Sprintf("http://%s", photosAddr))
+	if errParse != nil {
+		fmt.Printf("Error parsing photosURL: %v\n", errParse)
+	}
+	photosProxy := &httputil.ReverseProxy{Director: hc.CustomDirector(photosURL)}
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/users", hc.UsersHandler)
 	mux.HandleFunc("/sessions", hc.SessionsHandler)
 	mux.HandleFunc("/sessions/", hc.SpecificSessionHandler)
+
 	mux.Handle("/photos", photosProxy)
 	mux.Handle("/tags", photosProxy)
 
-	// PROXY to phototagging microservice mux.HandleFunc("/upload", handlers.UploadFileHandler)
-
 	wrappedMux := handlers.NewHeaderCors(mux)
 
-	log.Print("Server started on localhost:8080, use /upload for uploading files and /files/{fileName} for downloading")
-	log.Fatal(http.ListenAndServeTLS(addr, tlscert, tlskey, wrappedMux))
+	log.Print("Server is listening at: %s", addr)
+	log.Fatal(http.ListenAndServeTLS(addr, tlsCert, tlsKey, wrappedMux))
 }
