@@ -24,6 +24,7 @@ function photos(req, res, next) {
     // TODO: Send multiple photos in one response
     switch (req.method) {
         case "GET":
+            console.log("INSIDE PHOTOS")
             Photo.find( { $or: [{'tags.members': xUserID }, {creator: xUserID}] }).then(function(photos) {
                 res.status(200).json(photos)
             }).catch(next);
@@ -97,6 +98,7 @@ function photos(req, res, next) {
                     var newPhoto = new Photo();
                     newPhoto.url = newPath;
                     newPhoto.originalPhotoName = originalPhotoName
+                    newPhoto.likes = []
                     // TODO: Add only userID
                     newPhoto.creator = xUserID;
                     newPhoto.createdAt = Date.now();
@@ -174,6 +176,7 @@ function photosByTag(req, res, next) {
 // /photos/:photoID/:tagID
 function specificPhoto(req, res, next) {
     let xUserID = getUserID(req, res);
+    console.log("INSIDE SPECIFIC USER")
     let photoID = req.params.photoID;
     let tagID = req.params.tagID;
 
@@ -212,16 +215,33 @@ function specificPhoto(req, res, next) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
                 }
-                if (tagID.length == 0) {
+                if (!tagID) {
+                    // currentLikes = photo.likes
+                    // console.log("currentLikes (photo.likes): " + currentLikes + ", length of " + currentLikes.length + ", type " + typeof(currentLikes))
+                    // updatedLikes = []
+                    // if (currentLikes.includes(xUserID)) {
+                    //     i = currentLikes.indexOf(xUserID)
+                    //     updatedLikes = currentLikes.splice(i, 1)
+                    // } else {
+                    //     updatedLikes = currentLikes.push(xUserID)
+                    // }
+
+                    currentLikes = String(photo.likes)
                     updatedLikes = []
-                    if (photo.likes.includes(xUserID)) {
-                        i = photo.likes.indexOf(xUserID)
-                        updatedLikes = photo.likes.splice(i, 1)
+                    if (currentLikes.length == 0) {
+                        currentLikes = []
                     } else {
-                        updatedLikes = photo.likes.push(xUserID)
+                        currentLikes = currentLikes.replace(", ", ",").split(",")
                     }
+                    if (currentLikes.includes(xUserID)) {
+                        i = currentLikes.indexOf(xUserID)
+                        updatedLikes = currentLikes.splice(i, 1)
+                    } else {
+                        updatedLikes = currentLikes.push(xUserID)
+                    }
+                    console.log("updatedLikes: " + updatedLikes)
                     
-                    Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), likes: updatedLikes}, {new: true}, (err, updatedPhoto) => {
+                    Photo.findOneAndUpdate({_id: photoID}, { $set: {editedAt: Date.now(), likes: updatedLikes}}, {new: true}, (err, updatedPhoto) => {
                         if (err) {
                             res.send("Error: Couldn't update (like/unlike) photo: " + err);
                         } else {
@@ -276,7 +296,7 @@ function specificPhoto(req, res, next) {
                 if (photo.creator != xUserID) {
                     res.status(403).send("You are not the creator of this photo.");
                 }
-                if (tagID.length == 0) {
+                if (!tagID) {
                     Photo.deleteOne({_id: photoID}, function(err) {
                         if (err) {
                             res.send("Error: Could not delete tag from photo: " + err)

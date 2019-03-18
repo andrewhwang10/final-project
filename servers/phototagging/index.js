@@ -1,5 +1,5 @@
 const express = require("express");
-// const morgan = require("morgan");
+const morgan = require("morgan");
 var mongoose = require("mongoose");
 var modules = require("./modules.js");
 var photosRouter = require("./photosRouter.js");
@@ -14,7 +14,7 @@ const addr = process.env.ADDR || "phototaggingcontainer:80";
 const [host, port] = addr.split(":");
 
 app.use(express.json());
-// app.use(morgan("dev"));
+app.use(morgan("dev"));
 
 var mongoURL = process.env.MONGO_URL || 'mongodb://mongocontainer:27017/mongoDB';
 // var mongoURL = 'mongodb://localhost:27017/mongoDB'; // not working

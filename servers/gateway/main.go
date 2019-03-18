@@ -51,7 +51,7 @@ func main() {
 
 	_, err := rdb.Ping().Result()
 	failOnError(err, "Error pinging redis database")
-	rs := sessions.NewRedisStore(rdb, 150*time.Second)
+	rs := sessions.NewRedisStore(rdb, time.Hour) //150*time.Second
 
 	// mySQL Server
 	db, err := sql.Open("mysql", dsn)
@@ -80,7 +80,9 @@ func main() {
 	mux.HandleFunc("/sessions/", hc.SpecificSessionHandler)
 
 	mux.Handle("/photos", photosProxy)
+	mux.Handle("/photos/", photosProxy)
 	mux.Handle("/tags", photosProxy)
+	mux.Handle("/tags/", photosProxy)
 
 	wrappedMux := handlers.NewHeaderCors(mux)
 
