@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/info441/assignments-andrewhwang10/servers/gateway/models/users"
-	"github.com/info441/assignments-andrewhwang10/servers/gateway/sessions"
+	"github.com/info441/final-project/servers/gateway/models/sessions"
+	"github.com/info441/final-project/servers/gateway/models/users"
 )
 
 //SessionState represents a session that is started by an authenticated user

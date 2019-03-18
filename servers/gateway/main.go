@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/info441/assignments-andrewhwang10/servers/gateway/models/users"
-	"github.com/info441/assignments-andrewhwang10/servers/gateway/sessions"
 	"github.com/info441/final-project/servers/gateway/handlers"
+	"github.com/info441/final-project/servers/gateway/models/sessions"
+	"github.com/info441/final-project/servers/gateway/models/users"
 )
 
 func failOnError(err error, msg string) {
