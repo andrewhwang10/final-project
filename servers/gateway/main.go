@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"time"
 
@@ -64,7 +65,9 @@ func main() {
 		UserStore:    ms,
 	}
 
-	photosProxy := &httputil.ReverseProxy{Director: hc.CustomDirector(photosaddr)}
+	photosURL, err := url.Parse(photosaddr)
+	failOnError(err, "Error parsing string to URL for photosadddr")
+	photosProxy := &httputil.ReverseProxy{Director: hc.CustomDirector(photosURL)}
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/users", hc.UsersHandler)
