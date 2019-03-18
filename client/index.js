@@ -44,6 +44,7 @@ function uploadPhoto() {
     console.log("In uploadPhoto");
     var formData = new FormData(PHOTO_FORM);
     params.body = formData;
+    params.headers["Authorization"] = sessionStorage.getItem('sessionID');
 
     fetch(BASE_URI + "/photos", params)
         .then(response => {
@@ -68,6 +69,7 @@ function createTag() {
     var formData = new FormData(TAG_FORM);
     text = formData.get("textInput");
     params.body = formData;
+    params.headers["Authorization"] = sessionStorage.getItem('sessionID');
 
     fetch(BASE_URI + "/photos", params)
         .then(response => {
