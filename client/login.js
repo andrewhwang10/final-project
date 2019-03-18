@@ -1,7 +1,5 @@
 const LOGIN_FORM = /** @type {HTMLInputElement} */(document.querySelector("#loginForm"));
 const SIGNUP_FORM = /** @type {HTMLInputElement} */(document.querySelector("#signupForm"));
-const BASE_URI = "http://localhost:443"
-const headerAuthorization = "Authorization";
 
 var params = {
     method: "POST",
