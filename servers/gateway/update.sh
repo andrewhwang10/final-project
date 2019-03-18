@@ -60,6 +60,7 @@ redis
 
 # Double-check why mount letsencrypt...
 # Mount EC2's photos directory?
+# -v ~/photos:/photos \
 docker run -d \
 --network privNet \
 --name gatewaycontainer \

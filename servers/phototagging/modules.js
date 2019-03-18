@@ -5,12 +5,17 @@ const fs = require('fs');
 var path = require('path');
 // var async = require('async');
 
+// var PhotoResponse = {
+//     photoID: String,
+//     data: String,
+//     likes: Number,
+//     tags: []
+// }
 
 function getUserID(req, res) {
     let user = req.get("X-User");
     if (!user) {
-        res.status(403).send("User is not authenticated")
-        return
+        return ""
     }
     console.log(user)
     let userID = String(JSON.parse(user).id)
@@ -19,6 +24,10 @@ function getUserID(req, res) {
 
 function photos(req, res, next) {
     let xUserID = getUserID(req, res);
+    if (xUserID.length == 0) {
+        res.status(403).send("User is not authenticated")
+    }
+    
     console.log("X-UserID: " + xUserID)
 
     // TODO: Send multiple photos in one response
@@ -26,9 +35,45 @@ function photos(req, res, next) {
         case "GET":
             console.log("INSIDE PHOTOS")
             Photo.find( { $or: [{'tags.members': xUserID }, {creator: xUserID}] }).then(function(photos) {
-                res.status(200).json(photos)
+                photoResponses = []
+                for (i = 0; i < photos.length; i++) {
+                    photo = photos[i]
+                    url = photo.url
+                    tagNames = []
+                    for (j = 0; j < photo.tags.length; j++) {
+                        tagNames.push(photo.tags[j].name)
+                    }
+                    // fs = new FileStream(url, FileMode.Open);
+                    // photoBytes = new byte[fs.length]
+                    // fs.Read(photoBytes, 0, photoBytes.length);
+
+                    // photoBytes = new Buffer(fs.readFileSync(url)).toString("base64") // returns STRING representation of ARRAY?
+                    photoBytes = Buffer.from(fs.readFileSync(url)).toString("base64") // returns STRING representation of ARRAY?
+
+                    photoRes = {
+                        photoID: photo._id,
+                        data: photoBytes,
+                        likes: photo.likes.length,
+                        tags: tagNames
+                    }
+                    photoResponses.push(photoRes)  
+                }
+                console.log("photoResponses: " + photoResponses)
+                res.status(200).send(photoResponses)
+
             }).catch(next);
             break;
+
+            // console.log("INSIDE PHOTOS")
+            // Photo.findOne( { $or: [{'tags.members': xUserID }, {creator: xUserID}] }).then(function(photo) {
+            //     // res.status(200).json(photos)
+            //     url = photo.url
+            //     readStream = fs.createReadStream(url);
+            //     res.status(200)
+            //     readStream.pipe(res);
+            // }).catch(next);
+            // break;
+
             /*
             // TODO: Send photo to client in GATEWAY (using URLS) instead of this microservice?
             Photo.find({}).then(function(photos) {
@@ -154,6 +199,9 @@ function photos(req, res, next) {
 // CHeck if user is creator of tag or member of it
 function photosByTag(req, res, next) {
     let xUserID = getUserID(req, res);
+    if (xUserID.length == 0) {
+        res.status(403).send("User is not authenticated")
+    }
     let tagID = req.params.tagID;
 
     switch (req.method) {
@@ -176,6 +224,9 @@ function photosByTag(req, res, next) {
 // /photos/:photoID/:tagID
 function specificPhoto(req, res, next) {
     let xUserID = getUserID(req, res);
+    if (xUserID.length == 0) {
+        res.status(403).send("User is not authenticated")
+    }
     console.log("INSIDE SPECIFIC USER")
     let photoID = req.params.photoID;
     let tagID = req.params.tagID;
@@ -322,6 +373,9 @@ function specificPhoto(req, res, next) {
 // /tags
 function tags(req, res, next) {
     let xUserID = getUserID(req, res);
+    if (xUserID.length == 0) {
+        res.status(403).send("User is not authenticated")
+    }
     switch (req.method) {
         case "GET":
             Tag.find({ $or: [{members: xUserID}, {creator: xUserID}] }, function(err, tags) {
@@ -371,6 +425,9 @@ function tags(req, res, next) {
 // TODO: TEST Deleting and then getting tags
 function specificTag(req, res, next) {
     xUserID = getUserID(req, res)
+    if (xUserID.length == 0) {
+        res.status(403).send("User is not authenticated")
+    }
     tagID = req.params.tagID;
 
     switch (req.method) {
@@ -442,6 +499,10 @@ function specificTag(req, res, next) {
 
 // /tags/:tagID/:userID
 function specificTagMembers(req, res, next) {
+    xUserID = getUserID(req, res)
+    if (xUserID.length == 0) {
+        res.status(403).send("User is not authenticated")
+    }
     tagID = req.params.tagID;
     userID = req.params.userID;
 
