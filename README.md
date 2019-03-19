@@ -41,7 +41,17 @@ As a developer, we can now take a direct approach to responding to ideas and peo
    <td>
     As a photo owner, I want to
    </td>
-   <td>Upload photos in large quantities
+   <td>Upload photos in various quantities
+   </td>
+  </tr>
+<tr>
+   <td>
+    P0
+   </td>
+   <td>
+    As a photo owner, I want to
+   </td>
+   <td>Create tags
    </td>
   </tr>
   <tr>
@@ -51,7 +61,7 @@ As a developer, we can now take a direct approach to responding to ideas and peo
    <td>
     As a photo owner, I want to
    </td>
-   <td>Tag photos in large quantities
+   <td>Tag photos with numerous tags
    </td>
   </tr>
   <tr>
@@ -61,7 +71,17 @@ As a developer, we can now take a direct approach to responding to ideas and peo
    <td>
     As a user, I want to
    </td>
-   <td>Search based on multiple tags
+   <td>View all photos at once that I am allowed to see
+   </td>
+  </tr>
+  <tr>
+   <td>
+    P0
+   </td>
+   <td>
+    As a user, I want to
+   </td>
+   <td>View photos by tag
    </td>
   </tr>
   <tr>
@@ -101,47 +121,7 @@ As a developer, we can now take a direct approach to responding to ideas and peo
    <td>
     As a user, I want to
    </td>
-   <td>See all tags that exist
-   </td>
-  </tr>
-  <tr>
-   <td>
-    P2
-   </td>
-   <td>
-    As a user, I want to
-   </td>
-   <td>Download photos individually or in groups
-   </td>
-  </tr>
-  <tr>
-   <td>
-    P3
-   </td>
-   <td>
-    As a user, I want to
-   </td>
-   <td>See # of photos per tag
-   </td>
-  </tr>
-  <tr>
-   <td>
-    P3
-   </td>
-   <td>
-    As a user, I want to
-   </td>
-   <td>Save searches/queries for quick access
-   </td>
-  </tr>
-  <tr>
-   <td>
-    P3
-   </td>
-   <td>
-    As a user, I want to
-   </td>
-   <td>See most recent searches/queries and click for quick access
+   <td>See all tags that I am able to view
    </td>
   </tr>
 </table>
