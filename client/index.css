@@ -10,15 +10,50 @@ img {
     color: tomato;
 }
 
-header {
+header.jumbotron {
     position: fixed;
     width: 100%;
     z-index: 3;
+    background-color:#ffffff;
+    border-bottom: 1px solid rgba(0,0,0,.0975);
+    
 }
+.title {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: lighter;
+    text-align: center;
+}
+
+
+.title a {
+    text-decoration: none;
+    color: inherit;
+}
+
 main {
     padding-top: 10.4rem;
 }
 
-.row {
+body {
+    background-color: #fafafa;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.card-row {
     padding-bottom: 4rem;
+}
+
+#tagsBar {
+    position: fixed;
+    top: 10rem;
+    right: 4rem;
+    width: 15rem;
+}
+
+.fa-sm {
+    font-size: 1.3rem;
+}
+
+.buttons {
+    text-align: right;
 }

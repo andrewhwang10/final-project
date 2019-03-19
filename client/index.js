@@ -1,4 +1,5 @@
-const PHOTOS_UPLOADED = document.querySelector("#photosUploaded")
+const TAG_BAR = document.querySelector("#tagsBar");
+const PHOTOS_UPLOADED = document.querySelector("#photosUploaded");
 const TAG_FORM = document.querySelector("#tagForm");
 const PHOTO_FORM = document.querySelector("#photoForm");
 
@@ -7,7 +8,10 @@ var params = {
     mode: 'cors'
 }
 
-window.onload = getPhotos();
+window.onload = () => {
+    getPhotos();
+    getTags();
+}
 
 TAG_FORM.addEventListener("submit", onSubmit)
 PHOTO_FORM.addEventListener("submit", onSubmit);
@@ -68,7 +72,7 @@ function createTag() {
     params.body = formData;
     params.headers["Authorization"] = sessionStorage.getItem('sessionID');
 
-    fetch(BASE_URI + "/photos", params)
+    fetch(BASE_URI + "/tags", params)
         .then(response => {
             if (!response.ok) {
                 errorHttp = document.createElement("p")
@@ -83,6 +87,7 @@ function createTag() {
         })
         .then(r => {
             console.log("Success: ", r) // File param is empty
+            window.location.reload();
         })
         .catch(function(err) {
             console.log(err)
@@ -92,8 +97,6 @@ function createTag() {
 
 function renderPhotos(r) {
     for (i = 0; i < r.length; i++) {
-        console.log("creating card element");
-        console.log(r[i]);
         card = document.getElementById("tmp-card").cloneNode(true);
         card.setAttribute("data-photo-id", r[i].photoID);
         card.setAttribute("data-photo-likes", r[i].likes);
@@ -110,6 +113,7 @@ function renderPhotos(r) {
         renderLikes(card, r[i]);
         row = document.createElement("div");
         row.classList.add("row");
+        row.classList.add("card-row")
         row.appendChild(card);
         PHOTOS_UPLOADED.appendChild(row)
     }
@@ -140,9 +144,39 @@ function getTags() {
 }
 
 function renderTagsBar(r) {
-
+    for (i = 0; i < r.length; i++) {
+        tag = document.getElementById("tmp-tag").cloneNode(true);
+        tag.setAttribute("data-tag-id", r[i]._id);
+        tag.setAttribute("data-tag_name", r[i].name);
+        tag.querySelector("span").innerHTML = r[i].name;
+        TAG_BAR.querySelector(".card-body").appendChild(tag);
+    }
 }
 
+function getPhotosByTag(tag) {
+    console.log("In getPhotosByTag");
+    var params = {
+        method: "POST",
+        mode: 'cors',
+        headers: {}
+    }
+    params.headers["Authorization"] = sessionStorage.getItem('sessionID');
+
+    fetch(BASE_URI + "/photos/" + tag.getAttribute("data-tag-id"), params)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP error, status = ' + response.status + '\n' + response.statusText);
+            }
+            return response.json()
+        })
+        .then(r => {
+            console.log("Success: ", r); // File param is empty
+            renderPhotos(r);
+        })
+        .catch(function(err) {
+            console.log(err)
+        });
+}
 
 function getPhotos() {
     console.log(sessionStorage.getItem("sessionID"));   
@@ -208,5 +242,5 @@ function renderLikes(card, r) {
         icon.classList.add("far");
         icon.classList.remove("liked");
     }
-    icon.innerHTML = "<div>\t" + r.likes.length + "</div>";
+    icon.innerHTML = "\t" + r.likes.length + " likes";
 }

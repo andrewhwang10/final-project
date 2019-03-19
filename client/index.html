@@ -14,23 +14,40 @@
     <script src="js/resource.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400|Quicksand" rel="stylesheet">
 </head>
 <body>
     <header class="jumbotron p-3 justify-content-center">
-        <div>
-            <h1>Tag</h1>
-            <p>Upload a photo!</p>
+        <div class="container">
+            <div class="row">
+            <div class="col-sm">
+                
+            </div>
+            <div class="col-sm align-self-center">
+                <h1 class="title"><a href="index.html">Tag</a></h1>
+            </div>
+            <div class="col-sm align-self-center">
+                <div class="buttons">
+                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#photoModal">
+                        Upload Photo
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#tagModal">
+                        Create Tag
+                </button>
+            </div>
+            </div>
         </div>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#photoModal">
-                Upload Photo
-        </button>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#tagModal">
-                Create Tag
-        </button>
+        </div>
+        
     </header>
     <main>
-        <div class="btn-group" id="tagFilterButtons" role="group">
-
+        <div class="card" id="tagsBar">
+            <div class="card-header text-muted">
+                Tags
+            </div>
+            <div class="card-body">
+                
+            </div>
         </div>
         <div class="container" id="photosUploaded">
             
@@ -90,12 +107,11 @@
         <div class="card" id="tmp-card">
             <img src="" class="card-img-top" alt="">
             <div class="card-body">
+                <i class="far fa-heart fa-sm" onclick="like(this.closest('.card'))"></i>
             </div>
-            <div class="card-footer">
-                <span>
-                        <i class="far fa-heart fa-2x" onclick="like(this.closest('.card'))"></i>
-                </span>
-            </div>
+        </div>
+        <div id="tmp-tag">
+            <a class="badge badge-pill badge-primary" onclick="filter(this.parentNode)"></a>
         </div>
     </div>
     <script src="/index.js"></script>
