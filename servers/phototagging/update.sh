@@ -13,6 +13,8 @@ docker run -d \
 --name mongocontainer \
 mongo
 
+sleep 10
+
 # EC2's / --> container's /photos...
 # If run locally and give root, what would be mounted into the container?
 docker run -d \

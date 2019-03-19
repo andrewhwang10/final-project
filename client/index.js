@@ -40,6 +40,18 @@ function createAlert(success, action, parentElement) {
     parentElement.append(elem);
 }
 
+/*
+fetch(/photos) get request
+- get back an array of photoIDs
+- iterate through array. for each id,
+  - fetch /photo/:photoID
+
+when rending each photo on client, need array of PHOTOSCHEMAS
+- go through array. for each photoschema:
+   - fetch /photo/:photoID
+*/
+
+
 function uploadPhoto() {
     console.log("In uploadPhoto");
     var formData = new FormData(PHOTO_FORM);

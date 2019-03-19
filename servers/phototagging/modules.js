@@ -41,11 +41,11 @@ function photos(req, res, next) {
 
                     photoRes = {
                         photoID: photo._id,
-                        data: photoBytes,
+                        tags: tagNames,
                         likes: photo.likes,
-                        tags: tagNames
+                        data: photoBytes
                     }
-                    photoResponses.push(photoRes)  
+                    photoResponses.push(photoRes)
                 }
                 console.log("photoResponses: " + photoResponses)
                 res.status(200).send(photoResponses)
@@ -133,9 +133,9 @@ function photosByTag(req, res, next) {
         res.status(403).send("User is not authenticated")
     }
     let tagID = req.params.tagID;
-    if (!tagID) {
-
-    }
+    // if (!tagID) {
+    //     res.send("Tag doesn't exist")
+    // }
 
     switch (req.method) {
         case "GET":
