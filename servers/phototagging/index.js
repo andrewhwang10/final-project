@@ -27,7 +27,7 @@ mongoose.connect(mongoURL, function (err, db) {
     }
 }).catch(error => {console.log('Error connecting to db: ', error.message); });
 
-// TODO: WEBSOCKETS
+// WEBSOCKETS
 /*
 var rabbitURL = 'amqp://rabbitcontainer:5672'
 amqp.connect(rabbitURL, function(err, conn) {
@@ -54,15 +54,13 @@ amqp.connect(rabbitURL, function(err, conn) {
 */
 
 app.use("/", function(req, res, next) {
-    // console.log("X-User in INDEX.JS: " + req.get("X-User"));
-    // if (!req.get("X-User")) {
-    //     res.status(401).send("User is not authenticated");
-    // } else {
+    console.log("X-User in INDEX.JS: " + req.get("X-User"));
+    if (!req.get("X-User")) {
+        res.status(401).send("User is not authenticated");
+    } else {
         next();
-    // }
+    }
 });
-
-
 
 app.use("/photos", photosRouter);
 app.use("/tags", tagsRouter);

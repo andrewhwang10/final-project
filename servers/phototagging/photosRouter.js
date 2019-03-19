@@ -10,8 +10,6 @@ photosRouter.delete("/:photoID/:tagID", modules.specificPhoto);
 // Get photos with specific tag
 photosRouter.get("/:tagID", modules.photosByTag)
 
-// Get photo
-// photosRouter.get("/:photoID", modules.specificPhoto);
 // Like and unlike
 photosRouter.post("/:photoID", modules.specificPhoto);
 // Delete photo

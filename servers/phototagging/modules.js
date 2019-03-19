@@ -8,19 +8,13 @@ var async = require('async');
 
 function getUserID(req, res) {
     let user = req.get("X-User");
-    if (!user) {
-        return ""
-    }
-    console.log(user)
     let userID = String(JSON.parse(user).id)
     return userID;
 }
 
 function photos(req, res, next) {
     let xUserID = getUserID(req, res);
-    if (xUserID.length == 0) {
-        res.status(403).send("User is not authenticated")
-    }
+
     console.log("X-UserID: " + xUserID)
 
     switch (req.method) {
@@ -57,6 +51,7 @@ function photos(req, res, next) {
             form.parse(req, function(err, fields, files) {
                 if (err) {
                     console.log("ERROR IN FORM.PARSE: " + err)
+                    res.send("Error in parsing form: " + err)
                     return;
                 }
                 console.log(fields.type)
@@ -121,9 +116,7 @@ function photos(req, res, next) {
                         res.send("ERR IN ASYNC: " + err.message);
                     }
                 });
-                // res.status(201).json(savedPhotos)
             });
-            // res.status(201).json(savedPhotos)
             break;
         default:
             res.send("Method is not allowed");
@@ -133,9 +126,7 @@ function photos(req, res, next) {
 // Check if user is creator of tag or member of it
 function photosByTag(req, res, next) {
     let xUserID = getUserID(req, res);
-    if (xUserID.length == 0) {
-        res.status(403).send("User is not authenticated")
-    }
+
     let tagID = req.params.tagID;
 
     switch (req.method) {
@@ -143,6 +134,7 @@ function photosByTag(req, res, next) {
             Tag.findOne({ _id: tagID }).then(function(tag) {
                 if (!tag) {
                     res.send("Tag doesn't exist");
+                    return
                 }
                 Photo.find({ $or: [{'tags.members': xUserID }, {creator: xUserID}], tags: tag }).then(function(photos) {
                     res.status(200).json(photos);
@@ -158,9 +150,7 @@ function photosByTag(req, res, next) {
 // /photos/:photoID/:tagID
 function specificPhoto(req, res, next) {
     let xUserID = getUserID(req, res);
-    if (xUserID.length == 0) {
-        res.status(403).send("User is not authenticated")
-    }
+
     console.log("INSIDE SPECIFIC PHOTO")
     console.log("xUserID: " + xUserID)
     let photoID = req.params.photoID;
@@ -171,8 +161,10 @@ function specificPhoto(req, res, next) {
             Photo.findOne({_id: photoID}).then(function(photo) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
+                    return
                 }
                 if (!tagID) {
+                    // CHECK IF PHOTO IS ACTUALLY SHARED WITH USER
                     photoLikes = photo.likes
 
                     if (photoLikes.includes(xUserID)) {
@@ -185,6 +177,7 @@ function specificPhoto(req, res, next) {
                     Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), likes: photoLikes}, {new: true}, (err, updatedPhoto) => {
                         if (err) {
                             res.send("Error: Couldn't update (like/unlike) photo: " + err);
+                            return
                         } else {
                             // channelToSend = createChannelEvent(CHANNEL_UPDATE, channel, false);
                             // sendToQueue(channelToSend);
@@ -195,6 +188,7 @@ function specificPhoto(req, res, next) {
                     console.log("CREATOR of photo: " + xUserID)
                     if (photo.creator != xUserID) {
                         res.status(403).send("You are not the creator of this photo.");
+                        return
                     }
 
                     Tag.findOne({_id: tagID}).then(function(tag) {
@@ -237,14 +231,17 @@ function specificPhoto(req, res, next) {
             Photo.findOne({_id: photoID}).then(function(photo) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
+                    return
                 }
                 if (photo.creator != xUserID) {
                     res.status(403).send("You are not the creator of this photo.");
+                    return
                 }
                 if (!tagID) {
                     Photo.deleteOne({_id: photoID}, function(err) {
                         if (err) {
                             res.send("Error: Could not delete tag from photo: " + err)
+                            return
                         }
                         res.status(200).send("Deleted photo")
                     }).catch(next);
@@ -252,6 +249,7 @@ function specificPhoto(req, res, next) {
                     Photo.findOneAndUpdate({_id: photoID}, { $pull: {"tags": tagID}, editedAt: Date.now()}, {returnNewDocument: true}, (err, updatedPhoto) => {
                         if (err) {
                             res.send("Error: Couldn't remove tag from photo: " + err)
+                            return
                         }
                         res.status(200).send(updatedPhoto)
                     }).catch(next);
@@ -267,9 +265,7 @@ function specificPhoto(req, res, next) {
 // /tags
 function tags(req, res, next) {
     let xUserID = getUserID(req, res);
-    if (xUserID.length == 0) {
-        res.status(403).send("User is not authenticated")
-    }
+
     switch (req.method) {
         case "GET":
             Tag.find({ $or: [{members: xUserID}, {creator: xUserID}] }, function(err, tags) {
@@ -286,7 +282,8 @@ function tags(req, res, next) {
             form.parse(req, function(err, fields, files) {
                 if (err) {
                     console.log("ERROR IN TAGS FORM.PARSE")
-                    return;
+                    res.send("Error in parsing form: " + err)
+                    return
                 }
 
                 mem = String(fields.members).replace(" ", "")
@@ -316,12 +313,9 @@ function tags(req, res, next) {
 }
 
 // /tags/:tagID
-// TODO: TEST Deleting and then getting tags
 function specificTag(req, res, next) {
     xUserID = getUserID(req, res)
-    if (xUserID.length == 0) {
-        res.status(403).send("User is not authenticated")
-    }
+
     tagID = req.params.tagID;
 
     switch (req.method) {
@@ -330,9 +324,8 @@ function specificTag(req, res, next) {
                 if (!tag) {
                     res.send("Tag doesn't exist!");
                 } else {
-                    //////////////
-                    if (!tag.members.includes(xUserID)) {
-                        res.status(403).send("You are not a registered viewer of any tags on this photo.");
+                    if (!tag.members.includes(xUserID) && tag.creator != xUserID) {
+                        res.status(403).send("You are not a registered viewer nor the creator of this tag.");
                     } else {
                         res.status(200).json(tag)
                     }
@@ -346,7 +339,6 @@ function specificTag(req, res, next) {
                 } else if (tag.creator != xUserID) {
                     res.send("You are not the creator of this tag!")
                 } else {
-                    //////////////////////
                     Tag.deleteOne({_id: tagID}, function(err) {
                         if (err) {
                             res.send("Error: Could not delete tag: " + err)
@@ -358,34 +350,6 @@ function specificTag(req, res, next) {
                         }
                     }).catch(next);
                 }
-
-                // Tag.find({tags: tagID}, function (err, tags) {
-                    //{editedAt: Date.now(), tags: updatedTags}
-                    // or tag._id
-                    // {new: true},
-                    // no need array filters?
-                    // Photo.updateMany({tags: tagID}, { $pull: {tags: tagID}})
-                //  }).catch(next);
-                /*
-                updatedTags = photo.tags.push(tag) // change this to delete
-
-                Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), tags: updatedTags}, {new: true}, (err, updatedPhoto) => {
-                    if (err) {
-                        res.send("Error: Couldn't update (add tag to) photo: " + err);
-                    } else {
-                        // channelToSend = createChannelEvent(CHANNEL_UPDATE, channel, false); 
-                        // sendToQueue(channelToSend);
-                        res.json(updatedPhoto);
-                    }
-                });
-                */
-
-                // check if user is creator
-                // if (!tag.members.includes(xUserID)) {
-                //     res.status(403).send("You are not a registered viewer of any tags on this photo.");
-                // } else {
-                    // res.status(200).send("Tag has been deleted")
-                // }  
             }).catch(next);
             break;
         default:
@@ -396,9 +360,7 @@ function specificTag(req, res, next) {
 // /tags/:tagID/:userID
 function specificTagMembers(req, res, next) {
     xUserID = getUserID(req, res)
-    if (xUserID.length == 0) {
-        res.status(403).send("User is not authenticated")
-    }
+
     tagID = req.params.tagID;
     userID = req.params.userID;
 
@@ -457,11 +419,9 @@ function specificTagMembers(req, res, next) {
     }
 }
 
-
 exports.photos = photos
-exports.specificPhoto = specificPhoto
 exports.photosByTag = photosByTag
+exports.specificPhoto = specificPhoto
 exports.tags = tags
 exports.specificTag = specificTag
-// DONE
 exports.specificTagMembers = specificTagMembers
