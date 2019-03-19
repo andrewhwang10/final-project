@@ -21,10 +21,8 @@ function photos(req, res, next) {
     if (xUserID.length == 0) {
         res.status(403).send("User is not authenticated")
     }
-    
     console.log("X-UserID: " + xUserID)
 
-    // TODO: Send multiple photos in one response
     switch (req.method) {
         case "GET":
             console.log("INSIDE PHOTOS")
@@ -55,6 +53,7 @@ function photos(req, res, next) {
 
         case "POST":
             var form = new multiparty.Form();
+            var savedPhotos = []
             form.parse(req, function(err, fields, files) {
                 if (err) {
                     console.log("ERROR IN FORM.PARSE: " + err)
@@ -104,11 +103,15 @@ function photos(req, res, next) {
                     });
                 }
 
-                var savedPhotos = []
+                
                 async.forEachOf(photoObjects, function(photoObj, index, callback) {
                     console.log("IN ASYNC")
                         photoObj.save().then(function(savedPhoto) {
                             console.log("Saved photo: " + savedPhoto)
+                            savedPhotos.push(savedPhoto)
+                            if (savedPhotos.length == photoObjects.length) {
+                                res.status(201).json(savedPhotos)
+                            }
                             // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
                             // sendToQueue(channelToSend);
                         }).catch(next);
@@ -118,8 +121,9 @@ function photos(req, res, next) {
                         res.send("ERR IN ASYNC: " + err.message);
                     }
                 });
-                res.status(201).json(savedPhotos)
+                // res.status(201).json(savedPhotos)
             });
+            // res.status(201).json(savedPhotos)
             break;
         default:
             res.send("Method is not allowed");
