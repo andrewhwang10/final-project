@@ -31,7 +31,7 @@ header.jumbotron {
 }
 
 main {
-    padding-top: 10.4rem;
+    padding-top: 9rem;
 }
 
 body {
@@ -45,15 +45,50 @@ body {
 
 #tagsBar {
     position: fixed;
-    top: 10rem;
+    top: 9rem;
     right: 4rem;
     width: 15rem;
 }
 
 .fa-sm {
     font-size: 1.3rem;
+    margin-right: 0.5rem;
 }
 
 .buttons {
     text-align: right;
 }
+
+#tmp-tag {
+    padding-bottom: 0.3rem;
+}
+
+#tmp-tag a.badge {
+    width: 7rem;
+    color:white;
+}
+
+span.badge {
+    margin: 0.2rem;
+    font-weight: bold;
+}
+
+.likes-count {
+    font-weight: bold;
+}
+
+body {
+    font-family: 'Quicksand'
+}
+
+.fa-ellipsis-h {
+    color:grey;
+}
+
+#tagDataModalTitle {
+    color:#007bff;
+}
+
+input::placeholder {
+    font-style: italic;
+  }
