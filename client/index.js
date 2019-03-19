@@ -164,7 +164,10 @@ function renderTagsBar(r) {
         tag = document.getElementById("tmp-tag").cloneNode(true);
         tag.setAttribute("data-tag-id", r[i]._id);
         tag.setAttribute("data-tag-name", r[i].name);
-        tag.setAttribute("data-tag-members", r[i].members)
+        
+        members = r[i].members;
+        console.log(members);
+        tag.setAttribute("data-tag-members", JSON.stringify(members))
         tag.querySelector("a").innerHTML = r[i].name;
         TAG_BAR.querySelector(".card-body").appendChild(tag);
         if(sessionStorage.getItem("userID") != r[i].creator) {
@@ -306,9 +309,19 @@ function signout() {
 
 function showTagData(tag) {
     $("#tagDataModal").modal("show");
+    members = JSON.parse(tag.getAttribute("data-tag-members"));
     TAG_DATA_MODAL.querySelector("#tagDataModalTitle").innerHTML = "#" + tag.getAttribute("data-tag-name");
     TAG_DATA_MODAL.setAttribute("data-tag-id", tag.getAttribute("data-tag-id"));
-    TAG_DATA_MODAL.setAttribute("data-tag-members", tag.getAttribute("data-tag-members"));
+    TAG_DATA_MODAL.setAttribute("data-tag-members", members);
+    body = TAG_DATA_MODAL.querySelector(".modal-body");
+    members.forEach((member) => {
+        if(member != "") {
+            memberElement = document.querySelector("#tmp-member").cloneNode(true);
+            memberElement.querySelector("a").innerHTML = "Member ID" + member;
+            memberElement.setAttribute("data-member-id", member);
+            body.appendChild(memberElement);
+        }
+    })    
 }
 
 function deleteTag(tag) {
@@ -333,5 +346,52 @@ function deleteTag(tag) {
         .catch(function(err) {
             console.log(err)
         });
+}
 
+function removeMember(member) {
+    console.log("In removeMember");
+    var params = {
+        method: "DELETE",
+        mode: 'cors',
+        headers: {}
+    }
+    params.headers["Authorization"] = sessionStorage.getItem('sessionID');
+
+    fetch(BASE_URI + "/tags/" + member.closest(".modal").getAttribute("data-tag-id") + "/" + member.getAttribute("data-member-id"), params)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP error, status = ' + response.status + '\n' + response.statusText);
+            }
+        })
+        .then(r => {
+            console.log("Successfully deleted member: " +  member.getAttribute("data-member-id")); // File param is empty
+            window.location.reload();
+        })
+        .catch(function(err) {
+            console.log(err)
+        });
+}
+
+function addMember(memberInput) {
+    console.log("In addMember");
+    var params = {
+        method: "POST",
+        mode: 'cors',
+        headers: {}
+    }
+    params.headers["Authorization"] = sessionStorage.getItem('sessionID');
+
+    fetch(BASE_URI + "/tags/" + memberInput.closest(".modal").getAttribute("data-tag-id") + "/" + memberInput.value, params)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP error, status = ' + response.status + '\n' + response.statusText);
+            }
+        })
+        .then(r => {
+            console.log("Successfully added member: " +  memberInput.value); // File param is empty
+            window.location.reload();
+        })
+        .catch(function(err) {
+            console.log(err)
+        });
 }

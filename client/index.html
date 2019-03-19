@@ -113,7 +113,6 @@
                           </button>
                         </div>
                         <div class="modal-body">
-                          ...
                         </div>
                         <div class="modal-footer row">
                             <div class="col">
@@ -122,7 +121,7 @@
                             <div class="col-md-auto">
                                 <form class="form-inline  justify-content-end">
                                         <input type="text" class="form-control form-control-sm" aria-describedby="addHelp" placeholder="Member IDs">
-                                        <button type="button" class="btn btn-primary btn-sm" onclick="addMemberToTag(this.closest('.modal'))">Add</button>
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="addMember(this.previousElementSibling)">Add</button>
                                         
                                     </form>
                                     <small id="addHelp" class="form-text text-muted">Must be comma separated list of members' ids.</small>
@@ -153,6 +152,10 @@
         <div id="tmp-tag" class="d-flex justify-content-between">
             <a class="badge badge-pill badge-primary" onclick="getPhotosByTag(this.parentNode)"></a>
             <i class="fas fa-ellipsis-h" onclick="showTagData(this.parentNode)"></i>
+        </div>
+        <div id="tmp-member" class="dflex justify-content-between">
+            <a class="badge badge-pill badge-primary"></a>
+            <i class="fas fa-minus-circle" onclick="removeMember(this.parentNode)"></i>
         </div>
     </div>
     <script src="/index.js"></script>

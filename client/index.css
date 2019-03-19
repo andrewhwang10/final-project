@@ -84,6 +84,9 @@ body {
 .fa-ellipsis-h {
     color:grey;
 }
+.fa-minus-circle {
+    color:tomato;
+}
 
 #tagDataModalTitle {
     color:#007bff;
