@@ -63,17 +63,7 @@ As a developer, we can now take a direct approach to responding to ideas and peo
    </td>
    <td>Tag photos with numerous tags
    </td>
-  </tr>
-  <tr>
-   <td>
-    P0
-   </td>
-   <td>
-    As a user, I want to
-   </td>
-   <td>View all photos at once that I am allowed to see
-   </td>
-  </tr>
+</tr>
   <tr>
    <td>
     P0
@@ -86,12 +76,22 @@ As a developer, we can now take a direct approach to responding to ideas and peo
   </tr>
   <tr>
    <td>
-    P0
+    P1
    </td>
    <td>
     As a user, I want to
    </td>
    <td>Create an account
+   </td>
+  </tr>
+ <tr>
+   <td>
+    P1
+   </td>
+   <td>
+    As a user, I want to
+   </td>
+   <td>View all photos at once that I am allowed to see
    </td>
   </tr>
   <tr>
@@ -116,7 +116,7 @@ As a developer, we can now take a direct approach to responding to ideas and peo
   </tr>
   <tr>
    <td>
-    P1
+    P2
    </td>
    <td>
     As a user, I want to
