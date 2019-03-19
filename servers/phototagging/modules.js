@@ -194,33 +194,39 @@ function specificPhoto(req, res, next) {
                     }
 
                     Tag.findOne({_id: tagID}).then(function(tag) {
-                        // SHOULDN'T CONTINUE IF PHOTO CREATOR != TAG CREATOR
                         if (tag.creator != xUserID) {
                             res.status(403).send("You are not the creator of this tag.");
-                        }
-                        console.log("Add tag to photo: " + tag)
-                        
-                        photoTags = String(photo.tags)
-                        if (photoTags.length == 0) {
-                            photoTags = []
                         } else {
-                            photoTags = photoTags.replace(", ", ",").split(",")
-                        }
-                        photoTags.push(tag)
-                        console.log("photoTags: " + photoTags)
-
-                        Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), tags: photoTags}, {new: true}, (err, updatedPhoto) => {
-                            if (err) {
-                                res.send("Error: Couldn't update (add tag to) photo: " + err);
-                            } else {
-                                // channelToSend = createChannelEvent(CHANNEL_UPDATE, channel, false);
-                                // sendToQueue(channelToSend);
-                                res.json(updatedPhoto);
+                            tagOnPhoto = false
+                            for (i = 0; i < photo.tags.length; i++) {
+                                curTag = photo.tags[i]
+                                if (curTag.name.toLowerCase() == tag.name.toLowerCase()) {
+                                    tagOnPhoto = true
+                                    res.send("Tag is already on the photo")
+                                }
                             }
-                        });
+                            if (!tagOnPhoto) {
+                                console.log("Adding tag to photo: " + tag)
+
+                                photoTags = photo.tags
+                                photoTags.push(tag)
+                                console.log("photoTags: " + photoTags)
+        
+                                Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), tags: photoTags}, {new: true}, (err, updatedPhoto) => {
+                                    if (err) {
+                                        res.send("Error: Couldn't update (add tag to) photo: " + err);
+                                    } else {
+                                        // channelToSend = createChannelEvent(CHANNEL_UPDATE, channel, false);
+                                        // sendToQueue(channelToSend);
+                                        res.status(200).json(updatedPhoto);
+                                    }
+                                }).catch(next);
+                            }
+
+                        }
                     }).catch(next);
                 }
-            });
+            }).catch(next);
             break;
             
         case "DELETE":
