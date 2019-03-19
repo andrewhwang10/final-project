@@ -326,11 +326,12 @@ function specificTag(req, res, next) {
                 if (!tag) {
                     res.send("Tag doesn't exist!");
                 } else {
-                    // if (!tag.members.includes(xUserID)) {
-                    //     res.status(403).send("You are not a registered viewer of any tags on this photo.");
-                    // } else {
+                    //////////////
+                    if (!tag.members.includes(xUserID)) {
+                        res.status(403).send("You are not a registered viewer of any tags on this photo.");
+                    } else {
                         res.status(200).json(tag)
-                    // }
+                    }
                 }
             }).catch(next);
             break;
@@ -341,6 +342,7 @@ function specificTag(req, res, next) {
                 } else if (tag.creator != xUserID) {
                     res.send("You are not the creator of this tag!")
                 } else {
+                    //////////////////////
                     Tag.deleteOne({_id: tagID}, function(err) {
                         if (err) {
                             res.send("Error: Could not delete tag: " + err)
@@ -397,33 +399,53 @@ function specificTagMembers(req, res, next) {
     userID = req.params.userID;
 
     switch (req.method) {
-        // ERROR: Adding and removing twice??
-        // TODO: Check if user is already member
         case "POST":
-            // currentMembers = channel.members
-            // memberIdInt = parseInt(member.id, 10)
-            // if (member.id == null || member.id.length == 0 || isNaN(memberIdInt)) {
-            //     res.send("User is invalid, cannot add as member")
-            // } else if (currentMembers.includes(memberIdInt)) {
-            //     res.send("User is already a member");
-            // } else {
-            //     currentMembers.push(memberIdInt);
-            //     members = {"members": currentMembers}
-
-            
-            Tag.findOneAndUpdate({_id: tagID}, { $push: {"members": userID}, editedAt: Date.now()}, {returnNewDocument: true}, (err, tag) => {
-                if (err) {
-                    res.send("Error: Couldn't add to members: " + err)
+            Tag.findOne({_id: tagID}).then(function(tag) {
+                photoMembers = tag.members
+                if (!tag) {
+                    res.send("Tag doesn't exist")
+                } else if (tag.creator != xUserID) {
+                    res.send("You are not the owner of this tag")
+                } else {
+                    if (photoMembers.includes(userID)) {
+                        res.send("User is already a member")
+                    } else {
+                        console.log("Adding user as member...")
+                        photoMembers.push(userID)
+                        Tag.findOneAndUpdate({_id: tagID}, {editedAt: Date.now(), members: photoMembers}, {new: true}, (err, updatedTag) => {
+                            if (err) {
+                                res.send("Error: Couldn't update tag with new user: " + err);
+                            } else {
+                                res.json(updatedTag)
+                            }
+                        }).catch(next);
+                    }
                 }
-                res.status(201).send(tag)
             }).catch(next);
             break;
         case "DELETE":
-            Tag.findOneAndUpdate({_id: tagID}, { $pull: {"members": userID}, editedAt: Date.now()}, {returnNewDocument: true}, (err, tag) => {
-                if (err) {
-                    res.send("Error: Couldn't delete from members: " + err)
+            Tag.findOne({_id: tagID}).then(function(tag) {
+                photoMembers = tag.members
+                if (!tag) {
+                    res.send("Tag doesn't exist")
+                } else if (tag.creator != xUserID) {
+                    res.send("You are not the owner of this tag")
+                } else {
+                    if (!photoMembers.includes(userID)) {
+                        res.send("User is not a member")
+                    } else {
+                        console.log("Removing user as member...")
+                        i = photoMembers.indexOf(userID)
+                        photoMembers.splice(i, 1)
+                        Tag.findOneAndUpdate({_id: tagID}, {editedAt: Date.now(), members: photoMembers}, {new: true}, (err, updatedTag) => {
+                            if (err) {
+                                res.send("Error: Couldn't update tag with new user: " + err);
+                            } else {
+                                res.json(updatedTag)
+                            }
+                        }).catch(next);
+                    }
                 }
-                res.status(201).send("User was removed as member from tag")
             }).catch(next);
             break;
         default:
@@ -437,4 +459,5 @@ exports.specificPhoto = specificPhoto
 exports.photosByTag = photosByTag
 exports.tags = tags
 exports.specificTag = specificTag
+// DONE
 exports.specificTagMembers = specificTagMembers
