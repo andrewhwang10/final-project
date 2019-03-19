@@ -3,14 +3,8 @@ var Tag = require("./tag.js");
 var multiparty = require('multiparty');
 const fs = require('fs');
 var path = require('path');
-// var async = require('async');
+var async = require('async');
 
-// var PhotoResponse = {
-//     photoID: String,
-//     data: String,
-//     likes: Number,
-//     tags: []
-// }
 
 function getUserID(req, res) {
     let user = req.get("X-User");
@@ -43,17 +37,12 @@ function photos(req, res, next) {
                     for (j = 0; j < photo.tags.length; j++) {
                         tagNames.push(photo.tags[j].name)
                     }
-                    // fs = new FileStream(url, FileMode.Open);
-                    // photoBytes = new byte[fs.length]
-                    // fs.Read(photoBytes, 0, photoBytes.length);
-
-                    // photoBytes = new Buffer(fs.readFileSync(url)).toString("base64") // returns STRING representation of ARRAY?
                     photoBytes = Buffer.from(fs.readFileSync(url)).toString("base64") // returns STRING representation of ARRAY?
 
                     photoRes = {
                         photoID: photo._id,
                         data: photoBytes,
-                        likes: photo.likes.length,
+                        likes: photo.likes,
                         tags: tagNames
                     }
                     photoResponses.push(photoRes)  
@@ -63,49 +52,6 @@ function photos(req, res, next) {
 
             }).catch(next);
             break;
-
-            // console.log("INSIDE PHOTOS")
-            // Photo.findOne( { $or: [{'tags.members': xUserID }, {creator: xUserID}] }).then(function(photo) {
-            //     // res.status(200).json(photos)
-            //     url = photo.url
-            //     readStream = fs.createReadStream(url);
-            //     res.status(200)
-            //     readStream.pipe(res);
-            // }).catch(next);
-            // break;
-
-            /*
-            // TODO: Send photo to client in GATEWAY (using URLS) instead of this microservice?
-            Photo.find({}).then(function(photos) {
-                if (!photo) {
-                    res.send("Photo doesn't exist!");
-                }
-                if (photo.creator != xUserID) {
-                    console.log("User is NOT creator; checking tags now")
-                    for (i = 0; i < photo.tags.length; i++) {
-                        tag = photo.tags[i]
-                        if (tag.members.includes(xUserID)) {
-                            // res.status(200).send(photo)
-                            readStream = fs.createReadStream(photo.url);
-                            res.status(200)
-                            readStream.pipe(res);
-                        }
-                    }
-                } else {
-                    // res.status(200).send(photo)
-                    readStream = fs.createReadStream(photo.url);
-                    res.status(200)
-                    readStream.pipe(res);
-                }
-                res.status(403).send("You cannot view this photo")
-            });
-            
-            // { $or: [{privateChannel: false}, {privateChannel: true, members: xUserID}] }
-            Photo.find({}, function(err, photos) {
-                res.status(200).json(photos);
-            }).catch(next);
-            break;
-            */
 
         case "POST":
             var form = new multiparty.Form();
@@ -144,7 +90,6 @@ function photos(req, res, next) {
                     newPhoto.url = newPath;
                     newPhoto.originalPhotoName = originalPhotoName
                     newPhoto.likes = []
-                    // TODO: Add only userID
                     newPhoto.creator = xUserID;
                     newPhoto.createdAt = Date.now();
                     newPhoto.editedAt = Date.now();
@@ -159,36 +104,21 @@ function photos(req, res, next) {
                     });
                 }
 
-                // console.log("photoObjects: " + photoObjects)
-
-                // var savedPhotos = []
-
-                // async.forEachOf(photoObjects, function(photoObj, index, callback) {
-                //     console.log("IN ASYNC")
-                    // Photo.findOne({originalPhotoName: photoObjects[0].originalPhotoName}).then(function(photo) {
-                        //if (!photo) {
-                            photoObjects[0].save().then(function(savedPhoto) {
-                                console.log("Saved photo: " + savedPhoto)
-                                res.status(201).json(savedPhoto)
-                                // savedPhotos.push(savedPhoto)
-                                // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
-                                // sendToQueue(channelToSend);
-
-                                // fs used to be here
-
-                                // res.status(201).json(savedPhoto);
-                            }).catch(next);
-                        //} else {
-                            // console.log("Photo named " + photoObjects[0].originalPhotoName + " already exists")
-                            
-                        // }
-                    // }).catch(next);
-                // }, function (err) {
-                //     if (err) {
-                //         res.send("ERR IN ASYNC: " + err.message);
-                //     }
-                    // res.json(savedPhotos)
-                // });
+                var savedPhotos = []
+                async.forEachOf(photoObjects, function(photoObj, index, callback) {
+                    console.log("IN ASYNC")
+                        photoObj.save().then(function(savedPhoto) {
+                            console.log("Saved photo: " + savedPhoto)
+                            // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
+                            // sendToQueue(channelToSend);
+                        }).catch(next);
+                        // ADD: console.log("Photo named " + photoObj.originalPhotoName + " already exists")
+                }, function (err) {
+                    if (err) {
+                        res.send("ERR IN ASYNC: " + err.message);
+                    }
+                });
+                res.status(201).json(savedPhotos)
             });
             break;
         default:
@@ -196,13 +126,16 @@ function photos(req, res, next) {
     }
 }
 
-// CHeck if user is creator of tag or member of it
+// Check if user is creator of tag or member of it
 function photosByTag(req, res, next) {
     let xUserID = getUserID(req, res);
     if (xUserID.length == 0) {
         res.status(403).send("User is not authenticated")
     }
     let tagID = req.params.tagID;
+    if (!tagID) {
+
+    }
 
     switch (req.method) {
         case "GET":
@@ -231,34 +164,7 @@ function specificPhoto(req, res, next) {
     let photoID = req.params.photoID;
     let tagID = req.params.tagID;
 
-    switch (req.method) {
-        // TODO: TEST!
-        case "GET":
-            Photo.findOne({ _id: photoID}).then(function(photo) {
-                if (!photo) {
-                    res.send("Photo doesn't exist!");
-                }
-                if (photo.creator != xUserID) {
-                    console.log("User is NOT creator; checking tags now")
-                    for (i = 0; i < photo.tags.length; i++) {
-                        tag = photo.tags[i]
-                        if (tag.members.includes(xUserID)) {
-                            // res.status(200).send(photo)
-                            readStream = fs.createReadStream(photo.url);
-                            res.status(200)
-                            readStream.pipe(res);
-                        }
-                    }
-                } else {
-                    // res.status(200).send(photo)
-                    readStream = fs.createReadStream(photo.url);
-                    res.status(200)
-                    readStream.pipe(res);
-                }
-                res.status(403).send("You cannot view this photo")
-            });
-            break;
-        
+    switch (req.method) {        
         // Change from POST to PATCH?
         // TODO: TEST
         case "POST":
@@ -332,10 +238,8 @@ function specificPhoto(req, res, next) {
                                 res.json(updatedPhoto);
                             }
                         });
-                        }).catch(next);
-                    
+                    }).catch(next);
                 }
-                
             });
             break;
             
