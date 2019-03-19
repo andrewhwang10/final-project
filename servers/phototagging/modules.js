@@ -51,12 +51,16 @@ function photos(req, res, next) {
             form.parse(req, function(err, fields, files) {
                 if (err) {
                     console.log("ERROR IN FORM.PARSE: " + err)
-                    res.send("Error in parsing form: " + err)
+                    res.status(415).send("Error in parsing form: " + err)
                     return;
                 }
-                console.log(fields.type)
-                console.log(files.uploadFile + "length: " + files.uploadFile.length)
-                console.log(xUserID)
+                // console.log(fields.type)
+                // console.log(files.uploadFile + "length: " + files.uploadFile.length)
+                // console.log(xUserID)
+                if (!files.uploadFile) {
+                    res.send("Upload a file!")
+                    return
+                }
 
                 formFields = fields
                 formFiles = files.uploadFile
@@ -136,9 +140,34 @@ function photosByTag(req, res, next) {
                     res.send("Tag doesn't exist");
                     return
                 }
-                Photo.find({ $or: [{'tags.members': xUserID }, {creator: xUserID}], tags: tag }).then(function(photos) {
-                    res.status(200).json(photos);
+
+                Photo.find( { $or: [{'tags.members': xUserID }, {creator: xUserID}], tags: tag }).then(function(photos) {
+                    photoResponses = []
+                    for (i = 0; i < photos.length; i++) {
+                        photo = photos[i]
+                        url = photo.url
+                        tagNames = []
+                        for (j = 0; j < photo.tags.length; j++) {
+                            tagNames.push(photo.tags[j].name)
+                        }
+                        photoBytes = Buffer.from(fs.readFileSync(url)).toString("base64") // returns STRING representation of ARRAY?
+    
+                        photoRes = {
+                            photoID: photo._id,
+                            tags: tagNames,
+                            likes: photo.likes,
+                            data: photoBytes
+                        }
+                        photoResponses.push(photoRes)
+                    }
+                    console.log("photoResponses: " + photoResponses)
+                    res.status(200).send(photoResponses)
+    
                 }).catch(next);
+
+                // Photo.find({ $or: [{'tags.members': xUserID }, {creator: xUserID}], tags: tag }).then(function(photos) {
+                //     res.status(200).json(photos);
+                // }).catch(next);
             }).catch(next);
             break;
         default:
