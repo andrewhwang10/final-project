@@ -133,9 +133,6 @@ function photosByTag(req, res, next) {
         res.status(403).send("User is not authenticated")
     }
     let tagID = req.params.tagID;
-    // if (!tagID) {
-    //     res.send("Tag doesn't exist")
-    // }
 
     switch (req.method) {
         case "GET":
@@ -160,45 +157,28 @@ function specificPhoto(req, res, next) {
     if (xUserID.length == 0) {
         res.status(403).send("User is not authenticated")
     }
-    console.log("INSIDE SPECIFIC USER")
+    console.log("INSIDE SPECIFIC PHOTO")
+    console.log("xUserID: " + xUserID)
     let photoID = req.params.photoID;
     let tagID = req.params.tagID;
 
-    switch (req.method) {        
-        // Change from POST to PATCH?
-        // TODO: TEST
+    switch (req.method) {
         case "POST":
             Photo.findOne({_id: photoID}).then(function(photo) {
                 if (!photo) {
                     res.send("Photo doesn't exist!");
                 }
                 if (!tagID) {
-                    // currentLikes = photo.likes
-                    // console.log("currentLikes (photo.likes): " + currentLikes + ", length of " + currentLikes.length + ", type " + typeof(currentLikes))
-                    // updatedLikes = []
-                    // if (currentLikes.includes(xUserID)) {
-                    //     i = currentLikes.indexOf(xUserID)
-                    //     updatedLikes = currentLikes.splice(i, 1)
-                    // } else {
-                    //     updatedLikes = currentLikes.push(xUserID)
-                    // }
+                    photoLikes = photo.likes
 
-                    currentLikes = String(photo.likes)
-                    updatedLikes = []
-                    if (currentLikes.length == 0) {
-                        currentLikes = []
+                    if (photoLikes.includes(xUserID)) {
+                        i = photoLikes.indexOf(xUserID)
+                        photoLikes.splice(i, 1)
                     } else {
-                        currentLikes = currentLikes.replace(", ", ",").split(",")
+                        photoLikes.push(xUserID)
                     }
-                    if (currentLikes.includes(xUserID)) {
-                        i = currentLikes.indexOf(xUserID)
-                        updatedLikes = currentLikes.splice(i, 1)
-                    } else {
-                        updatedLikes = currentLikes.push(xUserID)
-                    }
-                    console.log("updatedLikes: " + updatedLikes)
                     
-                    Photo.findOneAndUpdate({_id: photoID}, { $set: {editedAt: Date.now(), likes: updatedLikes}}, {new: true}, (err, updatedPhoto) => {
+                    Photo.findOneAndUpdate({_id: photoID}, {editedAt: Date.now(), likes: photoLikes}, {new: true}, (err, updatedPhoto) => {
                         if (err) {
                             res.send("Error: Couldn't update (like/unlike) photo: " + err);
                         } else {
@@ -206,7 +186,7 @@ function specificPhoto(req, res, next) {
                             // sendToQueue(channelToSend);
                             res.json(updatedPhoto);
                         }
-                    });
+                    }).catch(next);
                 } else {
                     console.log("CREATOR of photo: " + xUserID)
                     if (photo.creator != xUserID) {
