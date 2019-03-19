@@ -1,0 +1,97 @@
+#templates {
+    display:none;
+}
+
+img {
+    max-width: 600px;
+}
+
+.liked {
+    color: tomato;
+}
+
+header.jumbotron {
+    position: fixed;
+    width: 100%;
+    z-index: 3;
+    background-color:#ffffff;
+    border-bottom: 1px solid rgba(0,0,0,.0975);
+    
+}
+.title {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: lighter;
+    text-align: center;
+}
+
+
+.title a {
+    text-decoration: none;
+    color: inherit;
+}
+
+main {
+    padding-top: 9rem;
+}
+
+body {
+    background-color: #fafafa;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.card-row {
+    padding-bottom: 4rem;
+}
+
+#tagsBar {
+    position: fixed;
+    top: 9rem;
+    right: 4rem;
+    width: 15rem;
+}
+
+.fa-sm {
+    font-size: 1.3rem;
+    margin-right: 0.5rem;
+}
+
+.buttons {
+    text-align: right;
+}
+
+#tmp-tag {
+    padding-bottom: 0.3rem;
+}
+
+#tmp-tag a.badge {
+    width: 7rem;
+    color:white;
+}
+
+span.badge {
+    margin: 0.2rem;
+    font-weight: bold;
+}
+
+.likes-count {
+    font-weight: bold;
+}
+
+body {
+    font-family: 'Quicksand'
+}
+
+.fa-ellipsis-h {
+    color:grey;
+}
+.fa-minus-circle {
+    color:tomato;
+}
+
+#tagDataModalTitle {
+    color:#007bff;
+}
+
+input::placeholder {
+    font-style: italic;
+  }
