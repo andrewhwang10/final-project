@@ -175,9 +175,8 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
    </td>
   </tr>
    <tr>
-      <td>POST 
-         <p>
-         /photos
+      <td>
+      	<h3>POST /photos</h3>
       </td>
       <td>Uploads at least one new photo to the database and user account</td>
       <td colspan="3" >The Photos microservice will handle when a user uploads an image by saving the image in the graph database associated with the UserID and datetime .
@@ -204,21 +203,6 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
       500: Internal server error
    </td>
   </tr>
-   <tr>
-      <td>
-         <h3>GET /photos/:photoID</h3>
-      </td>
-      <td>Gets a specific photo</td>
-      <td colspan="3" >Returns metadata about a specific photo.</td>
-      <td>200: Successfully retrieved photo
-         <p>
-         403: The request user is not the photo owner or the user is not a permitted viewer
-         <p>
-         404: PhotoID does not exist
-         <p>
-         500: Internal server error
-      </td>
-   </tr>
    <tr>
       <td>
          <h3>POST /photos/:photoID</h3>
@@ -287,8 +271,7 @@ User has to be authenticated to reach all endpoints. Otherwise, will respond wit
   </tr>
   <tr>
    <td>
-   <h3>POST </h3>
-   <h3>/users</h3>
+   <h3>POST /users</h3>
    </td>
    <td>Creates a new user account
    </td>
