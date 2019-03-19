@@ -1,8 +1,24 @@
-.image{
-    position:relative;
-    overflow:hidden;
-    padding-bottom:100%;
+#templates {
+    display:none;
 }
-.image img{
-    position:absolute;
+
+img {
+    max-width: 600px;
+}
+
+.liked {
+    color: tomato;
+}
+
+header {
+    position: fixed;
+    width: 100%;
+    z-index: 3;
+}
+main {
+    padding-top: 10.4rem;
+}
+
+.row {
+    padding-bottom: 4rem;
 }

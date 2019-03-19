@@ -1,5 +1,4 @@
 const PHOTOS_UPLOADED = document.querySelector("#photosUploaded")
-const PHOTOS_FLEX = PHOTOS_UPLOADED.querySelector("#photosFlex")
 const TAG_FORM = document.querySelector("#tagForm");
 const PHOTO_FORM = document.querySelector("#photoForm");
 
@@ -34,7 +33,7 @@ function createAlert(success, action, parentElement) {
         elem.textContent = "Unsuccessful " + action + ".";
         
     }
-    parentElement.append(elem);
+    parentElement.prepend(elem);
 }
 
 function uploadPhoto() {
@@ -48,13 +47,13 @@ function uploadPhoto() {
         .then(response => {
             createAlert(response.ok, "photo upload", PHOTO_FORM)
             if (!response.ok) {
-                throw new Error('HTTP error, status = ' + response.status);
+                throw new Error('HTTP error, status = ' + response.status + '\n' + response.statusText);
             }
             return response.json()
         })
         .then(r => {
             console.log("Success: ", r); // File param is empty
-            renderPhotos(r);
+            window.location.reload();
         })
         .catch(function(err) {
             console.log(err)
@@ -93,38 +92,75 @@ function createTag() {
 
 function renderPhotos(r) {
     for (i = 0; i < r.length; i++) {
-        imageDiv = document.createElement("div")
-        imageDiv.classList.add("col-sm-6", "col-md-4", "col-lg-3", "col-xl-2", "d-flex", "flex-wrap")
-
-        // Error: Relative path doesn't work
-        // Error: Absolute path works but "Not allowed to load local resource"
-        // image.src = "C:\\Users\\knasu\\go\\src\\final-project\\photos\\c189a873fb8cae1060638ea6.png"
-        // Use URL to test appending to HTML
-        image = document.createElement("img")
-        image.src = "data:image/png;base64," + r[i].body;
-        image.classList.add("img-thumbnail")
-        
-        imageDiv.appendChild(image)
-        PHOTOS_FLEX.appendChild(imageDiv)
+        console.log("creating card element");
+        console.log(r[i]);
+        card = document.getElementById("tmp-card").cloneNode(true);
+        card.setAttribute("data-photo-id", r[i].photoID);
+        card.setAttribute("data-photo-likes", r[i].likes);
+        card.querySelector('.card-img-top').src = "data:image/png;base64," + r[i].data;
+        cardBody = card.querySelector('.card-body')
+        icon = card.querySelector('.fa-heart')
+        r[i].tags.forEach(tag => {
+            tagBadge = document.createElement("span");
+            tagBadge.classList.add("badge", "badge-pill", "badge-primary");
+            tagBadge.innerHTML = tag;
+            cardBody.appendChild(tagBadge);
+        });
+        userID = sessionStorage.getItem('userID');
+        renderLikes(card, r[i]);
+        row = document.createElement("div");
+        row.classList.add("row");
+        row.appendChild(card);
+        PHOTOS_UPLOADED.appendChild(row)
     }
 }
 
-function getPhotos() {
-    console.log(sessionStorage.getItem("sessionID"));   
-    var headers = {
-        Authorization: sessionStorage.getItem("sessionID")
-    }
+function getTags() {
     var params = {
         method: "GET",
-        mode: "cors",
-        headers: headers
+        mode: "cors"
     }
+    params.headers = {};
+    params.headers["Authorization"] = sessionStorage.getItem("sessionID");
+    fetch(BASE_URI + "/tags", params)
+    .then(response => {
+        console.log(response);
+        if (!response.ok) {
+            throw new Error('HTTP error, status = ' + response.status + '\n' + response.body);
+        }
+        return response.json();
+    })
+    .then(r => {
+        console.log("Success: ", r); // File param is empty
+        renderTagsBar(r);
+    })
+    .catch(function(err) {
+        console.log(err)
+    });
+}
+
+function renderTagsBar(r) {
+
+}
+
+
+function getPhotos() {
+    console.log(sessionStorage.getItem("sessionID"));   
+    var params = {
+        method: "GET",
+        mode: "cors"
+    }
+    params.headers = {};
+    params.headers["Authorization"] = sessionStorage.getItem("sessionID");
     fetch(BASE_URI + "/photos", params)
     .then(response => {
-        if (!response.ok) {
-            throw new Error('HTTP error, status = ' + response.status);
+        console.log(response);
+        if (!response.ok && !response.status == 422) {
+            throw new Error('HTTP error, status = ' + response.status + '\n' + response.body);
+        } else if (response.status == 403) {
+            window.location.replace("login.html")
         }
-        return response.json()
+        return response.json();
     })
     .then(r => {
         console.log("Success: ", r); // File param is empty
@@ -134,4 +170,43 @@ function getPhotos() {
         console.log(err)
     });
 
+}
+
+function like(card) {
+    console.log("In like");
+    params.headers = {};
+    params.headers["Authorization"] = sessionStorage.getItem('sessionID');
+
+    fetch(BASE_URI + "/photos/" + card.getAttribute("data-photo-id"), params)
+        .then(response => {
+            createAlert(response.ok, "photo upload", PHOTO_FORM)
+            if (!response.ok) {
+                throw new Error('HTTP error, status = ' + response.status + '\n' + response.statusText);
+            }
+            return response.json()
+        })
+        .then(r => {
+            console.log("Success: ", r); // File param is empty
+            renderLikes(card, r);
+        })
+        .catch(function(err) {
+            console.log(err)
+        });
+}
+
+function renderLikes(card, r) {
+    card.setAttribute("data-photo-likes", r.likes);
+    icon = card.querySelector('.fa-heart');
+    userID = sessionStorage.getItem('userID');
+    console.log(userID);
+    if(r.likes.includes(userID)) {
+        icon.classList.remove("far");
+        icon.classList.add("fas");
+        icon.classList.add("liked");
+    } else {
+        icon.classList.remove("fas");
+        icon.classList.add("far");
+        icon.classList.remove("liked");
+    }
+    icon.innerHTML = "<div>\t" + r.likes.length + "</div>";
 }

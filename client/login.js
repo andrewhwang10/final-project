@@ -14,7 +14,6 @@ var params = {
 LOGIN_FORM.addEventListener("submit", login);
 SIGNUP_FORM.addEventListener("submit",  signUp)
 
-
 function login(e) {
     e.preventDefault();
     console.log("logging in...");
@@ -25,6 +24,7 @@ function login(e) {
     fetch(BASE_URI + "/sessions", params)
     .then(response => {
         if (!response.ok) {
+            createAlert(false, "login", LOGIN_FORM);
             throw new Error('HTTP error, status = ' + response.status);
         }
         sid = response.headers.get(headerAuthorization);
@@ -33,6 +33,7 @@ function login(e) {
     })
     .then(r => {
         console.log("Success: ", r); // File param is empty
+        sessionStorage.setItem('userID', r.id);
         window.location.replace("index.html");
     })
     .catch(function(err) {
@@ -51,6 +52,7 @@ function signUp(e) {
     fetch(BASE_URI + "/users", params)
     .then(response => {
         if (!response.ok) {
+            createAlert(false, "sign up", SIGNUP_FORM);
             throw new Error('HTTP error, status = ' + response.status);
         }
         sid = response.headers.get(headerAuthorization);
@@ -59,6 +61,7 @@ function signUp(e) {
     })
     .then(r => {
         console.log("Success: ", r); // File param is empty
+        sessionStorage.setItem('userID', r.id);
         window.location.replace("index.html");
     })
     .catch(function(err) {
