@@ -45,13 +45,11 @@ func main() {
 	// Redis Server
 	rdb := redis.NewClient(&redis.Options{
 		Addr: redisAddr,
-		// Password: "",
-		// DB:       0,
 	})
 
 	_, err := rdb.Ping().Result()
 	failOnError(err, "Error pinging redis database")
-	rs := sessions.NewRedisStore(rdb, time.Hour) //150*time.Second
+	rs := sessions.NewRedisStore(rdb, time.Hour)
 
 	// mySQL Server
 	db, err := sql.Open("mysql", dsn)

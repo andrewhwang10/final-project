@@ -54,9 +54,7 @@ function photos(req, res, next) {
                     res.status(415).send("Error in parsing form: " + err)
                     return;
                 }
-                // console.log(fields.type)
-                // console.log(files.uploadFile + "length: " + files.uploadFile.length)
-                // console.log(xUserID)
+
                 if (!files.uploadFile) {
                     res.send("Upload a file!")
                     return
@@ -105,16 +103,23 @@ function photos(req, res, next) {
                 
                 async.forEachOf(photoObjects, function(photoObj, index, callback) {
                     console.log("IN ASYNC")
-                        photoObj.save().then(function(savedPhoto) {
-                            console.log("Saved photo: " + savedPhoto)
-                            savedPhotos.push(savedPhoto)
-                            if (savedPhotos.length == photoObjects.length) {
-                                res.status(201).json(savedPhotos)
-                            }
-                            // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
-                            // sendToQueue(channelToSend);
-                        }).catch(next);
-                        // ADD: console.log("Photo named " + photoObj.originalPhotoName + " already exists")
+                    console.log("originalPhotoName: " + photoObj.originalPhotoName)
+                    console.log("xUserID: " + xUserID)
+                    Photo.findOne({originalPhotoName: photoObj.originalPhotoName, creator: xUserID}).then(function(photo) {
+                        if (!photo) {
+                            photoObj.save().then(function(savedPhoto) {
+                                console.log("Saved photo: " + savedPhoto)
+                                savedPhotos.push(savedPhoto)
+                                if (savedPhotos.length == photoObjects.length) {
+                                    res.status(201).json(savedPhotos)
+                                }
+                                // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
+                                // sendToQueue(channelToSend);
+                            }).catch(next);
+                        } else {
+                            res.send("Photo named " + photoObj.originalPhotoName + " already exists")
+                        }
+                    }).catch(next);
                 }, function (err) {
                     if (err) {
                         res.send("ERR IN ASYNC: " + err.message);
@@ -317,13 +322,12 @@ function tags(req, res, next) {
 
                 mem = String(fields.members).replace(" ", "")
                 mem = mem.split(",")
-                console.log("mem: " + mem)
-
-                console.log(fields)
-                console.log(fields.name[0])
                 
                 var newTag = new Tag();
                 newTag.name = fields.name[0]
+                console.log("newTag.name (fields.name[0]) and fields.name: ")
+                console.log(newTag.name)
+                console.log(fields.name)
 
                 // TODO: Revisit here to add members!!! Need to be comma separated
                 newTag.members = mem
@@ -331,9 +335,20 @@ function tags(req, res, next) {
                 newTag.createdAt = Date.now();
                 newTag.editedAt = Date.now();
 
-                newTag.save().then(function(savedTag) {
-                    res.status(201).json(savedTag)
+                Tag.findOne({name: newTag.name, creator: xUserID}).then(function(tag) {
+                    if (!tag) {
+                        newTag.save().then(function(savedTag) {
+                            console.log("Saved photo: " + savedTag)
+                            res.status(201).json(savedTag)
+                        }).catch(next);
+                    } else {
+                        res.send("Tag named " + newTag.name + " already exists")
+                    }
                 }).catch(next);
+
+                // newTag.save().then(function(savedTag) {
+                //     res.status(201).json(savedTag)
+                // }).catch(next);
             });
             break;
         default:
@@ -372,7 +387,7 @@ function specificTag(req, res, next) {
                         if (err) {
                             res.send("Error: Could not delete tag: " + err)
                         } else {
-                            Photo.updateMany({tags: tagID}, { $pull: {tags: tagID}})
+                            Photo.updateMany({tags: tag}, { $pull: {tags: tag}})
                             res.status(200).send("Deleted tag")
                             // eventToSend = createChannelEvent(CHANNEL_DELETE, channel, true)
                             // sendToQueue(eventToSend);
