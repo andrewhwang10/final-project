@@ -1,1 +1,0 @@
-docker build -t knasu13/tag .
