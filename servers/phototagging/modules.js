@@ -113,8 +113,6 @@ function photos(req, res, next) {
                                 if (savedPhotos.length == photoObjects.length) {
                                     res.status(201).json(savedPhotos)
                                 }
-                                // channelToSend = createChannelEvent(CHANNEL_NEW, channel, false);
-                                // sendToQueue(channelToSend);
                             }).catch(next);
                         } else {
                             res.send("Photo named " + photoObj.originalPhotoName + " already exists")
@@ -169,10 +167,6 @@ function photosByTag(req, res, next) {
                     res.status(200).send(photoResponses)
     
                 }).catch(next);
-
-                // Photo.find({ $or: [{'tags.members': xUserID }, {creator: xUserID}], tags: tag }).then(function(photos) {
-                //     res.status(200).json(photos);
-                // }).catch(next);
             }).catch(next);
             break;
         default:
@@ -213,8 +207,6 @@ function specificPhoto(req, res, next) {
                             res.send("Error: Couldn't update (like/unlike) photo: " + err);
                             return
                         } else {
-                            // channelToSend = createChannelEvent(CHANNEL_UPDATE, channel, false);
-                            // sendToQueue(channelToSend);
                             res.json(updatedPhoto);
                         }
                     }).catch(next);
@@ -320,16 +312,28 @@ function tags(req, res, next) {
                     return
                 }
 
+                console.log(fields.members)
+                console.log("type of fields.members: " + typeof(fields.members))
+                mem = fields.members
+                if (fields.members.length == 0) {
+                    console.log("fields.members.length is 0")
+                    mem = []
+                } else if (fields.members[0] == "") {
+                    mem.splice(0, 1)
+                }
                 mem = String(fields.members).replace(" ", "")
                 mem = mem.split(",")
+                if (mem.length == 0) {
+                    console.log("mem.length is 0")
+                    mem = []
+                    console.log(mem)
+                }
                 
                 var newTag = new Tag();
                 newTag.name = fields.name[0]
-                console.log("newTag.name (fields.name[0]) and fields.name: ")
                 console.log(newTag.name)
                 console.log(fields.name)
 
-                // TODO: Revisit here to add members!!! Need to be comma separated
                 newTag.members = mem
                 newTag.creator = xUserID;
                 newTag.createdAt = Date.now();
@@ -338,17 +342,13 @@ function tags(req, res, next) {
                 Tag.findOne({name: newTag.name, creator: xUserID}).then(function(tag) {
                     if (!tag) {
                         newTag.save().then(function(savedTag) {
-                            console.log("Saved photo: " + savedTag)
+                            console.log("Saved tag: " + savedTag)
                             res.status(201).json(savedTag)
                         }).catch(next);
                     } else {
                         res.send("Tag named " + newTag.name + " already exists")
                     }
                 }).catch(next);
-
-                // newTag.save().then(function(savedTag) {
-                //     res.status(201).json(savedTag)
-                // }).catch(next);
             });
             break;
         default:
@@ -387,13 +387,10 @@ function specificTag(req, res, next) {
                         if (err) {
                             res.send("Error: Could not delete tag: " + err)
                         } else {
-                            Photo.update({tags: tag}, { $pull: {tags: tag}}, {multi: true}).then(function(test) {
-                                console.log("In Photo.update...")
-                                console.log(test)
+                            Photo.updateMany({tags: tag}, { $pull: {tags: tag}}).then(function(result) {
+                                console.log(result)
+                                res.status(200).send("Deleted tag")
                             }).catch(next);
-                            res.status(200).send("Deleted tag")
-                            // eventToSend = createChannelEvent(CHANNEL_DELETE, channel, true)
-                            // sendToQueue(eventToSend);
                         }
                     }).catch(next);
                 }
