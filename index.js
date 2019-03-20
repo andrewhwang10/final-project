@@ -46,7 +46,7 @@ function createAlert(success, action, parentElement) {
 }
 
 function uploadPhoto() {
-    console.log("In uploadPhoto");
+    console.log("Uploading photo...");
     var formData = new FormData(PHOTO_FORM);
     var params = {
         method: "POST",
@@ -66,7 +66,6 @@ function uploadPhoto() {
             return response.json()
         })
         .then(r => {
-            console.log("Success: ", r); // File param is empty
             window.location.reload();
         })
         .catch(function(err) {
@@ -76,7 +75,7 @@ function uploadPhoto() {
 }
 
 function createTag() {
-    console.log("In createTag");
+    console.log("Creating tag");
     var formData = new FormData(TAG_FORM);
     text = formData.get("textInput");
     var params = {
@@ -98,7 +97,6 @@ function createTag() {
             return response.json();
         })
         .then(r => {
-            console.log("Success: ", r) // File param is empty
             window.location.reload();
         })
         .catch(function(err) {
@@ -133,6 +131,7 @@ function renderPhotos(r) {
 }
 
 function getTags() {
+    console.log("Getting tags...");
     var params = {
         method: "GET",
         mode: "cors"
@@ -148,7 +147,6 @@ function getTags() {
         return response.json();
     })
     .then(r => {
-        console.log("Success: ", r); // File param is empty
         renderTagsBar(r);
     })
     .catch(function(err) {
@@ -174,7 +172,7 @@ function renderTagsBar(r) {
 }
 
 function getPhotosByTag(tag) {
-    console.log("In getPhotosByTag");
+    console.log("Getting photos by tag...");
     console.log(tag);
     var params = {
         method: "GET",
@@ -191,7 +189,6 @@ function getPhotosByTag(tag) {
             return response.json()
         })
         .then(r => {
-            console.log("Success: ", r); // File param is empty
             PHOTOS_UPLOADED.innerHTML = "";
             renderPhotos(r);
         })
@@ -201,7 +198,7 @@ function getPhotosByTag(tag) {
 }
 
 function getPhotos() {
-    console.log(sessionStorage.getItem("sessionID"));   
+    console.log("Getting photos...");   
     var params = {
         method: "GET",
         mode: "cors"
@@ -210,7 +207,6 @@ function getPhotos() {
     params.headers["Authorization"] = sessionStorage.getItem("sessionID");
     fetch(BASE_URI + "/photos", params)
     .then(response => {
-        console.log(response);
         if (!response.ok && !response.status == 422) {
             throw new Error('HTTP error, status = ' + response.status + '\n' + response.body);
         } else if (response.status == 403) {
@@ -219,7 +215,6 @@ function getPhotos() {
         return response.json();
     })
     .then(r => {
-        console.log("Success: ", r); // File param is empty
         renderPhotos(r);
     })
     .catch(function(err) {
@@ -229,7 +224,7 @@ function getPhotos() {
 }
 
 function like(card) {
-    console.log("In like");
+    console.log("Liking photo...");
     params.headers = {};
     params.headers["Authorization"] = sessionStorage.getItem('sessionID');
 
@@ -242,7 +237,6 @@ function like(card) {
             return response.json()
         })
         .then(r => {
-            console.log("Success: ", r); // File param is empty
             renderLikes(card, r);
         })
         .catch(function(err) {
@@ -251,10 +245,10 @@ function like(card) {
 }
 
 function renderLikes(card, r) {
+    console.log("Rendering likes...");
     card.setAttribute("data-photo-likes", r.likes);
     icon = card.querySelector('.fa-heart');
     userID = sessionStorage.getItem('userID');
-    console.log(userID);
     if(r.likes.includes(userID)) {
         icon.classList.remove("far");
         icon.classList.add("fas");
@@ -268,10 +262,10 @@ function renderLikes(card, r) {
 }
 
 function addTag(card) {
+    console.log("Adding tag...");
     tagName = card.querySelector("input").value;
     availableTags = Array.from(TAG_BAR.querySelector(".card-body").children);
     availableTags.forEach((tag) => {
-        console.log(tag)
         if(tag.getAttribute("data-tag-name") == tagName) {
             var params = {
                 method: "POST",
@@ -288,7 +282,6 @@ function addTag(card) {
                     return response.json()
                 })
                 .then(r => {
-                    console.log("Success: ", r); // File param is empty
                     window.location.reload();
                 })
                 .catch(function(err) {
@@ -322,7 +315,7 @@ function showTagData(tag) {
 }
 
 function deleteTag(tag) {
-    console.log("In deleteTag");
+    console.log("Deleting tag...");
     var params = {
         method: "DELETE",
         mode: 'cors',
@@ -337,7 +330,6 @@ function deleteTag(tag) {
             }
         })
         .then(r => {
-            console.log("Successfully deleted tag: " + tag.getAttribute("data-tag-name")); // File param is empty
             window.location.reload();
         })
         .catch(function(err) {
@@ -346,7 +338,7 @@ function deleteTag(tag) {
 }
 
 function removeMember(member) {
-    console.log("In removeMember");
+    console.log("Removing member...");
     var params = {
         method: "DELETE",
         mode: 'cors',
@@ -361,7 +353,6 @@ function removeMember(member) {
             }
         })
         .then(r => {
-            console.log("Successfully deleted member: " +  member.getAttribute("data-member-id")); // File param is empty
             window.location.reload();
         })
         .catch(function(err) {
@@ -370,7 +361,7 @@ function removeMember(member) {
 }
 
 function addMember(memberInput) {
-    console.log("In addMember");
+    console.log("Adding member...");
     var params = {
         method: "POST",
         mode: 'cors',
@@ -385,7 +376,6 @@ function addMember(memberInput) {
             }
         })
         .then(r => {
-            console.log("Successfully added member: " +  memberInput.value); // File param is empty
             window.location.reload();
         })
         .catch(function(err) {
