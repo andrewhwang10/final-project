@@ -30,6 +30,8 @@ Below are ideas to implement moving forward in the project:
 
 
 # Technical Description
+API: tag.karinasu.me
+Client: https://andrewhwang10.github.io/final-project
 
 
 ## Architecture
