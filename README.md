@@ -20,6 +20,13 @@ As a developer, we can now take a direct approach to responding to ideas and peo
 ## Architecture
 ![Network Diagram](./network-diagram.png)
 
+Names of Docker containers:
+gatewaycontainer
+userscontainer
+sessionscontainer
+phototaggingcontainer
+mongocontainer
+
 ## User Stories
 
 
