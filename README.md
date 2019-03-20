@@ -9,9 +9,24 @@ INFO 441 - WI19
 
 To make the process of sharing and organizing photos more robust, our application will provide users with a platform to classify and share photos by tags. Our application could be used by various audiences (e.g. professional photographers, companies for social media purposes, etc.). However, we will focus on the **general individual who prefers a flexible method of storing and sharing photos which surpasses the capabilities and use cases of typical, statically-structured file systems**. Such a user would be able to better personalize their photo-viewing and photo-sharing experience by using our application.
 
-This audience would want to use our application for a number of reasons, the initial one likely being the want or need to organize photos based on multiple factors. For example, a student may want to view groups of photos based on their year in college (i.e. freshman, sophomore, etc.), calendar year, _and _their birthday. By tagging photos appropriately, the user can accomplish multiple photo-viewing and photo-sharing experiences. In this case, he/she could recapitulate their senior year as they near graduation, the calendar year as New Year's Day approaches, and how they have spent their past birthdays.
+This audience would want to use our application for a number of reasons, the initial one likely being the want or need to organize photos based on multiple factors. For example, a student may want to view groups of photos based on their year in college (i.e. freshman, sophomore, etc.), calendar year, _and_ their birthday. By tagging photos appropriately, the user can accomplish multiple photo-viewing and photo-sharing experiences. In this case, he/she could recapitulate their senior year as they near graduation, the calendar year as New Year's Day approaches, and how they have spent their past birthdays.
 
 As a developer, we can now take a direct approach to responding to ideas and people's needs. I have personally dealt with the limitations of current photo-viewing and sharing platforms, and have seen people around us experience the same issue. From forgetting which classification a certain photo is under in a file system to tediously and manually sharing select photos with various people, users have different pain points that can be addressed in this application. Overall, we see this application being able to address various pain points in diverse scenarios.
+
+# Post-Development Notes
+
+## Challenges
+
+An intial challenge was deciding on the system architecture. This challenge dissipated as discussion progressed and as we gained a better grasp on the problem we hoped to solve. Other notable challenges include deciding on the technologies to accomplish the goals of our endpoints and troubleshooting communicating to the client. One thing we would do differently in the future while developing, would be to develop the server and client concurrently. This would allow us to thoroughly test and catch problems that may need to be addressed via change in the architecture.
+
+## Potential Next Steps
+
+Below are ideas to implement moving forward in the project:
+
+- Adding websockets and message queues to notify users (e.g. Use cases: When a tag has been shared with them, when one of their photos have been liked, implementing other media type, implement photo download (small, med, large, original size)
+- Filtering on multiple tags
+- Save search queries for quick access
+
 
 
 # Technical Description
