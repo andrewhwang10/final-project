@@ -35,7 +35,8 @@ Below are ideas to implement moving forward in the project:
 ## Architecture
 ![Network Diagram](./network-diagram.png)
 
-### Names of Docker containers:
+### Names of Docker containers & API:
+- API: tag.karinasu.me
 - gatewaycontainer
 - userscontainer
 - sessionscontainer
