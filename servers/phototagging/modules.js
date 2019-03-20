@@ -311,28 +311,18 @@ function tags(req, res, next) {
                     res.send("Error in parsing form: " + err)
                     return
                 }
-
-                console.log(fields.members)
-                console.log("type of fields.members: " + typeof(fields.members))
+                
                 mem = fields.members
-                if (fields.members.length == 0) {
-                    console.log("fields.members.length is 0")
+                if (fields.members[0] == "") {
                     mem = []
-                } else if (fields.members[0] == "") {
-                    mem.splice(0, 1)
-                }
-                mem = String(fields.members).replace(" ", "")
-                mem = mem.split(",")
-                if (mem.length == 0) {
-                    console.log("mem.length is 0")
-                    mem = []
-                    console.log(mem)
+                } else {
+                    mem = String(fields.members).replace(" ", "")
+                    mem = mem.split(",")
+                    console.log("Members wasn't empty: " + mem)
                 }
                 
                 var newTag = new Tag();
                 newTag.name = fields.name[0]
-                console.log(newTag.name)
-                console.log(fields.name)
 
                 newTag.members = mem
                 newTag.creator = xUserID;
