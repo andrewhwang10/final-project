@@ -387,7 +387,10 @@ function specificTag(req, res, next) {
                         if (err) {
                             res.send("Error: Could not delete tag: " + err)
                         } else {
-                            Photo.updateMany({tags: tag}, { $pull: {tags: tag}})
+                            Photo.update({tags: tag}, { $pull: {tags: tag}}, {multi: true}).then(function(test) {
+                                console.log("In Photo.update...")
+                                console.log(test)
+                            }).catch(next);
                             res.status(200).send("Deleted tag")
                             // eventToSend = createChannelEvent(CHANNEL_DELETE, channel, true)
                             // sendToQueue(eventToSend);
